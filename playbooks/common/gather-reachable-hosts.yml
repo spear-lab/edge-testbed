@@ -1,0 +1,69 @@
+---
+- name: Find reachable hosts for the awx_targets and handle unreachable ones.
+  hosts: localhost
+  tasks:
+    - name: Gather reachable hosts
+      cartken.gather_reachable_hosts:
+        machine_type: "{{ _pin__machine_type }}"
+        awx_targets_string: "{{ _pin__awx_targets_string }}"
+      register: reachability_results
+
+    - name: Check if any provided awx targets are unreachable
+      ansible.builtin.set_fact:
+        __some_awx_targets_are_reachable: "{{ reachability_results.reachable_hosts | length > 0 }}"
+        __some_awx_targets_are_unreachable: "{{ reachability_results.unreachable_awx_targets | length > 0 }}"
+
+    - name: Create a tmp hostfile for reachable hosts
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: "reachable_awx_targets_hosts"
+      loop: "{{ reachability_results.reachable_hosts }}"
+
+    - name: Create a tmp hostfile for unreachable_awx_targets
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: "unreachable_awx_targets_hosts"
+      loop: "{{ reachability_results.unreachable_awx_targets }}"
+
+# NOTE:
+# We need to explicitly fail awx targets that have no matching reachable ansible host.
+# This is necessary to due the BE interactions.
+# The idea is to iterate over all found unreachable targets and fail them.
+#
+# Challenges to keep in mind:
+# If there are no unreachable targets the var will be '' and ansible does not allow plays with no hosts.
+# Ansible also does not allow 'when' or other conditionals for plays.
+# Just iterating over the unreachable_awx_targets will not work because they are not part of the known inventory.
+# They need to be appended as a tmp virtual inventory first.
+# If all hosts of a play fail the entire run will terminate.
+# To avoid this we add localhost to the inventory and not fail for it to have one host always pass successfully
+# to be able to run the following plays.
+# Just using 'ignore_errors' does not work because the host will not be red/failed but green/ignored.
+
+- name: Explicilty fail all unreachable awx targets
+  hosts: unreachable_awx_targets_hosts,localhost
+  gather_facts: false
+  roles:
+    - role: common/log-update-failure
+      _rin__cart_id: "{{ inventory_hostname }}"
+      when: |
+        hostvars.localhost.__some_awx_targets_are_unreachable and
+        inventory_hostname != 'localhost' and
+        _pin__used_for_updates is defined and
+        _pin__used_for_updates
+  tasks:
+    - name: Explicit fail
+      ansible.builtin.fail:
+        msg: "{{ inventory_hostname }}"
+      when: |
+        hostvars.localhost.__some_awx_targets_are_unreachable and
+        inventory_hostname != 'localhost' and
+        (_pin__used_for_updates is undefined or not _pin__used_for_updates)
+
+- name: Terminate the entire run if no reachable hosts were found
+  hosts: localhost
+  tasks:
+    - name: Fail the entire run if no target is reachable
+      ansible.builtin.fail:
+        msg: "No provided awx-target is reachable. Terminating the run."
+      when: not __some_awx_targets_are_reachable

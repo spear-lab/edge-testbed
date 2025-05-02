@@ -1,0 +1,7 @@
+.vscode
+context
+*.pyc
+artifacts
+env
+*.egg*
+build

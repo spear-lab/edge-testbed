@@ -1,0 +1,46 @@
+---
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: apt
+
+- name: Create temporary directory for package download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: temp
+  register: tempdir
+
+# NOTE: The WiFi driver originally comes from https://deb.trendtechcn.com/rtl8812au-dkms.deb, but we
+# pull it from our own package registry in order to control how often we want to actually update it
+# to the latest version - i.e. push a new one into the GitLab package registry if you want to update
+- name: Download Debian package 'rtl8812au-dkms' with WiFi driver
+  ansible.builtin.get_url:
+    url: "https://gitlab.com/api/v4/projects/37823228/packages/generic/rtl8812au-dkms/latest/rtl8812au-dkms.deb"
+    dest: "{{ tempdir.path }}/rtl8812au-dkms.deb"
+    mode: "0644"
+    headers:
+      DEPLOY-TOKEN: "{{ gitlab_registry_token }}"
+  retries: 3
+  delay: 3
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+- name: Get WiFi driver version from the Debian file
+  ansible.builtin.command: "dpkg-deb -f {{ tempdir.path }}/rtl8812au-dkms.deb Version"
+  register: result
+  changed_when: true
+
+- name: WiFi driver 'rtl8812au-dkms' Debian package versions
+  ansible.builtin.debug:
+    msg:
+      - 'Installed version: {{ ansible_facts.packages["rtl8812au-dkms"][0].version }}'
+      - "Downloaded version: {{ result.stdout }}"
+
+# NOTE: Dependencies 'raspberrypi-kernel-headers' and 'dkms' are already installed from initial
+# installation of this driver
+- name: Install the new 'rtl8812au-dkms' version '{{ result.stdout }}' (this takes a while)
+  ansible.builtin.command:
+    cmd: "apt install --yes --reinstall --allow-downgrades --no-install-recommends ./rtl8812au-dkms.deb"
+    chdir: "{{ tempdir.path }}"
+  become: true
+  when: ansible_facts.packages['rtl8812au-dkms'][0].version != result.stdout
+  changed_when: true

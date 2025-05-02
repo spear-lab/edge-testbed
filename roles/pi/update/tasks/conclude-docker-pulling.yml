@@ -1,0 +1,29 @@
+---
+- name: Wait for pulling of docker release image '{{ _rin__deploy_tag }}' to complete (PI-Update)
+  ansible.builtin.async_status:
+    jid: "{{ __docker_release_image_pulling.ansible_job_id }}"
+  register: __docker_release_image_pulling_result
+  until: __docker_release_image_pulling_result.finished
+  # Example: 3600 //(int division) 60 = 60 -> i.e. 60 retries * 60 delay/poll_number = 3600
+  retries: "{{ (__docker_pull_timeout | int) // (__docker_pull_poll_interval | int) }}"
+  delay: "{{ __docker_pull_poll_interval }}"
+
+# Might need to be added to a "try-catch" block to make sure to always clear this even if the pulling fails.
+- name: Clean up async file for docker release image pulling
+  ansible.builtin.async_status:
+    jid: "{{ __docker_release_image_pulling.ansible_job_id }}"
+    mode: cleanup
+
+- name: Wait for pulling of docker devel image '{{ _rin__deploy_tag }}' to complete (PI-Update)
+  ansible.builtin.async_status:
+    jid: "{{ __docker_devel_image_pulling.ansible_job_id }}"
+  register: __docker_devel_image_pulling_result
+  until: __docker_devel_image_pulling_result.finished
+  retries: "{{ (__docker_pull_timeout | int) // (__docker_pull_poll_interval | int) }}"
+  delay: "{{ __docker_pull_poll_interval }}"
+
+# Might need to be added to a "try-catch" block to make sure to always clear this even if the pulling fails.
+- name: Clean up async file for docker devel image pulling (PI-Update)
+  ansible.builtin.async_status:
+    jid: "{{ __docker_devel_image_pulling.ansible_job_id }}"
+    mode: cleanup

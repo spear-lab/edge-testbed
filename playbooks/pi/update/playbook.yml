@@ -1,0 +1,47 @@
+---
+- name: Check that all required variables are set
+  hosts: localhost
+  roles:
+    - role: common/check-required-variables
+      _rin__required_variables:
+        - awx_targets_string
+        - docker_deploy_tag
+        - gitlab_registry_user
+        - gitlab_registry_token
+        - robot_configs_branch
+        - robot_configs_token
+        - force_override
+
+- import_playbook: "{{ ansible_config_file | dirname }}/playbooks/common/gather-reachable-hosts.yml"
+  vars:
+    _pin__machine_type: "pi"
+    _pin__awx_targets_string: "{{ awx_targets_string }}"
+    _pin__used_for_updates: true
+
+- hosts: reachable_awx_targets_hosts
+  strategy: free
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    matching_cart_number: >-
+      {{ hostvars.localhost.reachability_results.robot_id_host_mapping
+        | selectattr('1', 'equalto', inventory_hostname)
+        | map(attribute='0')
+        | first }}
+
+  environment:
+    DOCKER_CLIENT_TIMEOUT: "300"
+
+  roles:
+    - role: pi/update
+      _rin__cart_number: "{{ matching_cart_number }}"
+      _rin__deploy_tag: "{{ docker_deploy_tag }}"
+      _rin__deploy_token: "{{ gitlab_registry_token }}"
+      _rin__online_docker_registry_user: "{{ gitlab_registry_user }}"
+      _rin__online_docker_registry_token: "{{ gitlab_registry_token }}"
+      _rin__robot_configs_branch: "{{ robot_configs_branch }}"
+      _rin__robot_configs_access_token: "{{ robot_configs_token }}"
+      _rin__robot_configs_force_override: "{{ force_override }}"
+    - common/connection/power-cycle
+    - common/connection/wait-for-connection
+    - role: common/notify-update-completed
+      _rin__cart_number: "{{ matching_cart_number }}"

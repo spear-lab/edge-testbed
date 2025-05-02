@@ -1,0 +1,15 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__certificate_type:
+        type: str
+        choices: ["cart", "flashing-station"]
+        required: true
+      _rin__certificate_number:
+        type: int
+        required: true
+      _rin__force_download:
+        description: "Force download and overwrite VPN credentials even if they already exist"
+        type: bool
+        required: false

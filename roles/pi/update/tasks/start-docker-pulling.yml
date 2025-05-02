@@ -1,0 +1,28 @@
+---
+- name: Log into gitlab container registry
+  community.docker.docker_login:
+    registry_url: "{{ __online_docker_registry }}"
+    username: "{{ _rin__online_docker_registry_user }}"
+    password: "{{ _rin__online_docker_registry_token }}"
+
+- name: Start asynchronous background pulling of docker release image '{{ _rin__deploy_tag }}' (PI-Update)
+  community.docker.docker_image:
+    name: "{{ __online_docker_registry }}/cartken/repo/raspberry-pi-release:{{ _rin__deploy_tag }}"
+    source: pull
+    force_source: true # Important to make Ansible to actually pull the newest version
+  retries: 3
+  register: __docker_release_image_pulling # Required to make retries work
+  until: __docker_release_image_pulling is succeeded # Required to make retries work
+  async: "{{ (__docker_pull_timeout | int) * 2 }}"
+  poll: 0
+
+- name: Start asynchronous background pulling of docker devel image '{{ _rin__deploy_tag }}' (PI-Update)
+  community.docker.docker_image:
+    name: "{{ __online_docker_registry }}/cartken/repo/raspberry-pi-devel:{{ _rin__deploy_tag }}"
+    source: pull
+    force_source: true # Important to make Ansible to actually pull the newest version
+  retries: 3
+  register: __docker_devel_image_pulling # Required to make retries work
+  until: __docker_devel_image_pulling is succeeded # Required to make retries work
+  async: "{{ (__docker_pull_timeout | int) * 2 }}"
+  poll: 0

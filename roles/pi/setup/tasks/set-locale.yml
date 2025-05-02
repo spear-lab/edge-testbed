@@ -1,0 +1,27 @@
+---
+- name: Enable selected locales for generation in '/etc/locale.gen'
+  ansible.builtin.lineinfile:
+    path: /etc/locale.gen
+    search_string: "# {{ item }}"
+    line: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "en_US.UTF-8 UTF-8"
+    - "de_DE.UTF-8 UTF-8"
+  become: true
+
+- name: Generate locales
+  # NOTE: On Debian the 'locale-gen' command takes no parameters and instead reads the configuration from '/etc/locale.gen'
+  ansible.builtin.command: "locale-gen"
+  become: true
+  changed_when: true
+
+- name: Update locale to 'en_US.UTF-8'
+  ansible.builtin.command: "update-locale LANG=en_US.UTF-8"
+  become: true
+  changed_when: true
+
+- name: Reset SSH connection to refresh locales
+  ansible.builtin.meta: reset_connection

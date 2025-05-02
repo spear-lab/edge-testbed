@@ -1,0 +1,2 @@
+---
+__ubuntu_version: "{{ '18-04' if ansible_distribution_version == '18.04' else '20-04' }}"

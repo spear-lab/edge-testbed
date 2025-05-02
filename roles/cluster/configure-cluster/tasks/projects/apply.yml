@@ -1,0 +1,11 @@
+---
+- name: Delete initial Demo Project
+  awx.awx.project:
+    name: Demo Project
+    state: absent
+
+- name: Ensure the it-management repository exists as an AWX project and is synchronized
+  ansible.builtin.include_role:
+    name: cluster/sync-awx-project
+  vars:
+    _rin__branch: "{{ _rin__branch_name }}"

@@ -1,0 +1,7 @@
+---
+- name: Ensure Teams exist
+  awx.awx.team:
+    name: "{{ item }}"
+    organization: Cartken
+    state: present
+  loop: "{{ __all_teams }}"

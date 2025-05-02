@@ -1,0 +1,13 @@
+---
+- name: "Extract modem ID from the host IP address"
+  ansible.builtin.set_fact:
+    __modem_id: "{{  ( inventory_hostname.split('.').1|int / 32 )|int - 1 }}"
+
+# NOTE: If WiFi (wlan0) is available, then it already is the primary connection -> no action here
+- name: Use {{ ('modem' ~ __modem_id ~ ' as primary connection (set it)') if (__modem_id | int) <= 3 else 'wlan0 as primary connection (already set -> skipping)'}} # noqa: yaml[line-length]
+  ansible.builtin.command: "ip route add default dev modem{{ __modem_id }} metric 500"
+  become: true
+  when: (__modem_id | int) >= 1 and (__modem_id | int) <= 3
+  register: result
+  failed_when: result.rc != 0 and "File exists" not in result.stderr
+  changed_when: true

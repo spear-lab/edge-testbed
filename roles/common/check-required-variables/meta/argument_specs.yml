@@ -1,0 +1,8 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__required_variables:
+        type: list
+        elements: str
+        required: true

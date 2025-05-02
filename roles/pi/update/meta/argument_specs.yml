@@ -1,0 +1,16 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__deploy_tag:
+        type: str
+        required: true
+      _rin__deploy_token:
+        type: str
+        required: true
+      _rin__online_docker_registry_user:
+        type: str
+        required: true
+      _rin__online_docker_registry_token:
+        type: str
+        required: true

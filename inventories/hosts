@@ -1,0 +1,25 @@
+
+# NOTE: These vars will be available in AWX under Resources > Inventories > Carts > Variables
+[all:vars]
+ansible_user=spear
+ansible_connection=ssh
+
+[vpn-server]
+localhost
+# 10.66.71.254
+
+[master-nuc]
+10.66.71.253
+
+[new-pi]
+10.66.71.250
+
+[pis]
+10.66.71.[1:250]
+
+# NOTE: This is an auxiliary workaround hosts group to overcome linter challenges.
+# The linter does not recognize externally (AWX) injected variables and thinks they are undefined,
+# even with a checker role/play to handle them before a play.
+# Just setting the missing host value to "" or "... | default('')" does not work because Ansible/Linter requires non-empty hosts.
+[no_hosts]
+no_hosts

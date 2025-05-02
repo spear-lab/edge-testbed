@@ -1,0 +1,15 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__branch_name:
+        type: str
+        required: true
+      _rin__only_update_playbook_related:
+        description: "Only update the templates, and roles."
+        type: bool
+        required: false
+      _rin__reset_configuration:
+        description: "Resets the cluster configuraation"
+        type: bool
+        required: false

@@ -1,0 +1,62 @@
+---
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install required tools
+  ansible.builtin.package:
+    name:
+      - python3-pip
+      - git
+      - mosh
+      - neovim
+      - chrony
+      - hostapd
+      - isc-dhcp-server
+      - openvpn
+      - pigpio
+      - minicom
+      - iptraf
+      - i2c-tools
+      - dnsmasq
+      - sshpass
+    state: latest
+  become: true
+
+- name: Create temporary directory for Debian package download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: temp
+  register: tempdir
+
+# NOTE: libqmi-utils cannot be installed from the default Raspbian Debian mirror because only
+#   version 1.22.0 is available. We need a newer one, therefore we install them from our own
+#   registry.
+# NOTE: wiringpi package in Raspbian Debian mirror is too old and does not support Pi 4, so we use
+#   the latest version uploaded to our package registry.
+- name: Download 'libqmi' and 'wiringpi' Debian packages from our GitLab package registry
+  ansible.builtin.get_url:
+    url: "https://gitlab.com/api/v4/projects/37823228/packages/generic/{{ item }}"
+    dest: '{{ tempdir.path }}/{{ item.split("/") | last }}'
+    mode: "0644"
+    headers:
+      DEPLOY-TOKEN: "{{ _rin__deploy_token }}"
+  with_items:
+    - libqmi-utils/1.30.8-1/libqmi-utils_1.30.8-1_armhf.deb
+    - libqmi-proxy/1.30.8-1/libqmi-proxy_1.30.8-1_armhf.deb
+    - libqmi-glib5/1.30.8-1/libqmi-glib5_1.30.8-1_armhf.deb
+    - libqrtr-glib0/1.2.2-1/libqrtr-glib0_1.2.2-1_armhf.deb
+    - wiringpi-armhf/latest/wiringpi-armhf.deb
+  retries: 3
+  delay: 3
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+# NOTE: Installing the packages all at once prevents dependency conflicts and no uninstall is needed
+- name: Install new packages and their dependencies
+  ansible.builtin.shell:
+    cmd: "apt install -y ./*.deb"
+    chdir: "{{ tempdir.path }}"
+  become: true
+  changed_when: true

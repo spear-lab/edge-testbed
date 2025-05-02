@@ -1,0 +1,61 @@
+---
+- name: Set auxiliary vars
+  ansible.builtin.set_fact:
+    user_file_path: "{{ ansible_config_file | dirname }}/roles/cluster/configure-cluster/files/exported_users.json"
+
+- name: Export all users
+  awx.awx.export:
+    # NOTE: In theory it is possible to export all assets from a cluster.
+    # In pracice, (with out populated configuration) this is not working - it gets stuck somewhere deep in ansible.
+    # all: true
+    users: "all"
+  register: export_output
+
+# NOTE: All AWX users should connect via their Google Accounts.
+# When using Google's OAuth2 this "user_password" gets ignored.
+# I.e. we only use this user_password to avoid failiures when running this task.
+# When adding a new user they always need a password.
+# This password is never explicitly used by users.
+# When exporting users via awx.awx the passwords are encrypted (no way ot decrypt).
+# Thus a simply import is not possible because a valid pwd is still required.
+- name: Modify exported users with default password
+  ansible.builtin.set_fact:
+    modified_users: >-
+      {{ export_output.assets.users |
+        rejectattr('username', 'eq', 'admin') |
+        map('combine', {'password': user_password }) |
+        list }}
+
+- name: Update password for cartken backend user
+  ansible.builtin.set_fact:
+    modified_users: >-
+      {{ modified_users |
+        selectattr('email', 'eq', 'info@cartken.com') |
+        map('combine', {'password': backend_user_pwd }) |
+        list | union(modified_users | rejectattr('email', 'eq', 'info@cartken.com')) }}
+  vars:
+    # https://docs.ansible.com/ansible/2.8/user_guide/vault.html#use-encrypt-string-to-create-encrypted-variables-to-embed-in-yaml
+    backend_user_pwd: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      64626236363739333465363033376337316638393633356338623862653030356434393630356461
+      6562326634383539396163356433636131306432633865300a616534303635386532303566306361
+      61343838653530656639353132343662653039623534363031373064356437313139346532383937
+      3230616637653764300a303334356364643562316637363938383937646336306630346239643435
+      6634
+
+- name: Populate 'related' information
+  ansible.builtin.include_tasks: populate_related_information.yml
+  loop: "{{ modified_users }}"
+
+- name: Update JSON file in the configure cluster role
+  ansible.builtin.copy:
+    content: "{{ modified_users | to_nice_json }}"
+    dest: "{{ user_file_path }}"
+    mode: "0600"
+
+- name: Encrypt the JSON file
+  ansible.builtin.shell: >-
+    export ANSIBLE_VAULT_PASSWORD_FILE=~/cartken_itm_cli/.vault_pwd &&
+    ansible-vault encrypt "{{ ansible_config_file | dirname }}/roles/cluster/configure-cluster/files/exported_users.json"
+  no_log: true
+  changed_when: true

@@ -1,0 +1,105 @@
+---
+# Note:
+# This file is a custom mix of the following:
+# - ansible-builder docs: https://ansible.readthedocs.io/projects/builder/en/latest/definition/
+# - official AWX EE yml: https://github.com/ansible/awx-ee/blob/devel/execution-environment.yml
+# - legacy cartken Dockerfiles for EE (and Ansible Runner Baseimage)
+# - a lot of trial&error to get things running
+
+# https://ansible.readthedocs.io/projects/builder/en/stable/definition/
+# Note: the working dir is the dir where this file is located (by default)
+version: 3
+images:
+  base_image:
+    name: quay.io/centos/centos:stream9
+dependencies:
+  system: |
+    git-core [platform:rpm]
+    python3.9-devel [platform:rpm compile]
+    libcurl-devel [platform:rpm compile]
+    krb5-devel [platform:rpm compile]
+    krb5-workstation [platform:rpm]
+    subversion [platform:rpm]
+    subversion [platform:dpkg]
+    git-lfs [platform:rpm]
+    sshpass [platform:rpm]
+    rsync [platform:rpm]
+    epel-release [platform:rpm]
+    python-unversioned-command [platform:rpm]
+    unzip [platform:rpm]
+    # cartken
+    easy-rsa
+    openvpn
+    iperf3
+    iputils
+    # additional dependencies that are necessary due to a slim set of galaxy collections
+    gcc
+    nc
+  ansible_core:
+    # Require minimum of 2.15 to get ansible-inventory --limit option
+    package_pip: ansible-core>=2.15.0rc2,<2.16
+  ansible_runner:
+    package_pip: ansible-runner
+  # Note keep this list of collections as slim as possible to avoid unnecessary bloat/image-size
+  galaxy: |
+    ---
+    collections:
+      - name: ansible.posix
+      # cartken
+      - name: community.general
+      - name: community.docker
+  python: |
+    git+https://github.com/ansible/ansible-sign
+    ncclient
+    paramiko
+    pykerberos
+    pyOpenSSL
+    pypsrp[kerberos,credssp]
+    pywinrm[kerberos,credssp]
+    toml
+    pexpect>=4.5
+    python-daemon
+    pyyaml
+    six
+    packaging
+    # cartken
+    requests
+    argparse
+# Note: unlike in normal Dockerfiles if you want to COPY files into the image
+# you need to first add them here into the "build context" and COPY them from there
+additional_build_files:
+# Note: Things need to be split like this, otherwise error occur.
+  - src: vpn/*
+    dest: vpn
+  - src: ssh/ssh_config
+    dest: ssh
+  - src: ssh/keys/
+    dest: ssh/keys
+  - src: entrypoint
+    dest: entrypoint
+additional_build_steps:
+  append_base:
+    - RUN $PYCMD -m pip install -U pip
+  # cartken
+    - RUN dnf -y install epel-release && dnf config-manager --set-enabled epel
+    - COPY _build/vpn/ /etc/openvpn/
+    - COPY _build/ssh/ssh_config /etc/ssh/ssh_config
+    - COPY _build/ssh/keys/* /root/.ssh/
+    - ARG VAULT_PWD=pwd
+    - RUN echo $VAULT_PWD > vault_pwd && ansible-vault decrypt /root/.ssh/id_rsa --vault-password-file=vault_pwd && ansible-vault decrypt /etc/openvpn/* --vault-password-file=vault_pwd && rm vault_pwd
+    - RUN chmod 600 /root/.ssh/id_rsa && chmod 644 /root/.ssh/id_rsa.pub
+  append_final:
+    - COPY --from=quay.io/ansible/receptor:devel /usr/bin/receptor /usr/bin/receptor
+    - RUN mkdir -p /var/run/receptor
+    - RUN git lfs install --system
+    - COPY _build/entrypoint/entrypoint /opt/builder/bin/entrypoint
+    - RUN chmod +x /opt/builder/bin/entrypoint
+options:
+  user: root
+  # IMPORTANT: not working!
+  # Do not try and change the "cmd" or "entrypoint", be it via the ansible-builder syntax nor the Dockerfile one
+  # The only way to change it (based on my many trials) is to add to the original "entrypoint" script (see file in repo)
+  # container_init:
+  #   package_pip: dumb-init>=1.2.5
+  #   entrypoint: '["/opt/builder/bin/entrypoint", "dumb-init"]'
+  #   cmd: '["bash"]'

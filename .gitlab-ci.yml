@@ -1,0 +1,51 @@
+stages:
+  - analysis
+  - staging
+  - merge
+
+lint:
+  stage: analysis
+  image: python:3.11
+  tags:
+    - saas-linux-small-amd64
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - python3 -m pip install --upgrade pip
+    - python3 -m pip install ansible-lint
+    - ansible-galaxy install -r roles/requirements.yml
+  script:
+    # NOTE: Ansible does not load 'ansible.cfg' configuration from a world-writeable directory:
+    # https://github.com/webdevops/Dockerfile/issues/266#issuecomment-417291633
+    - chmod -v 700 $(pwd)
+    # NOTE: When linting vaulted/encrypted files the vault password is required.
+    # We inject a masked CI/CD variable.
+    - echo "$VAULT_PWD" > .vault_pwd && export ANSIBLE_VAULT_PASSWORD_FILE=.vault_pwd
+    # NOTE: Run ansible lint on the whole repo since it is recursively checking imported playbooks and roles anyway
+    - ansible-lint
+
+.itm_cli_template:
+  image: registry.gitlab.com/cartken/it-management/ci-cli:latest
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    # NOTE: This initial CLI invocation will generate all necessary files.
+    - itm v
+    - echo $VAULT_PWD > ~/cartken_itm_cli/.vault_pwd
+
+.staging_mr_template:
+  extends: .itm_cli_template
+  stage: staging
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  when: manual
+
+staging_synchronize_project:
+  extends: .staging_mr_template
+  script:
+    - itm c p s staging --branch ${CI_COMMIT_REF_NAME}
+
+staging_apply_configuration:
+  extends: .staging_mr_template
+  script:
+    - itm c ac staging -y --branch ${CI_COMMIT_REF_NAME}

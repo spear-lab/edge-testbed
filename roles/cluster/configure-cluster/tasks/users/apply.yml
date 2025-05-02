@@ -1,0 +1,4 @@
+---
+- name: Import users
+  awx.awx.import:
+    assets: "{{ {'users': (lookup('file', 'exported_users.json') | from_json())} }}"

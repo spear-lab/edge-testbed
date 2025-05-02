@@ -1,0 +1,19 @@
+---
+# NOTE: The reason for placing the reset tasks together with the adding ones is
+# to avoid code duplication by reusing single configurations.
+#
+# The tasks depend and build ontop of one another.
+# E.g. the organisation has to be created first before adding the teams followed by the users.
+#
+# When resetting the configuration one has to run these task files in reverse.
+# i.e. first reset the users, then the teams, and finally the organisation.
+#
+# This is necessary to avoid issues.
+# E.g. if the organization is deleted first but it is specified in the user configuration this happens:
+# While resetting the user ansible tries to ensure to delete only this user for the concrete organization.
+# It can no longer find the organization and fails.
+- ansible.builtin.include_tasks: tasks/main/apply.yml
+  when: not _rin__reset_configuration
+
+- ansible.builtin.include_tasks: tasks/main/reset.yml
+  when: _rin__reset_configuration

@@ -1,0 +1,106 @@
+---
+- name: Remove the 'roscore' container
+  community.docker.docker_container:
+    name: roscore
+    state: absent
+
+- name: Create the '/home/cartken/configuration' directory if it does not exist
+  ansible.builtin.file:
+    path: "/home/cartken/configuration"
+    state: directory
+    mode: "0755"
+
+- name: Re-create and start the 'release' container
+  community.docker.docker_container:
+    name: release
+    image: "{{ __online_docker_registry }}/cartken/repo/raspberry-pi-release:{{ _rin__deploy_tag }}"
+    interactive: true
+    tty: true
+    init: true
+    restart_policy: unless-stopped
+    privileged: true
+    network_mode: host
+    entrypoint: "/home/ros/ros_release_env/rosmon.sh"
+    env:
+      ROS_MASTER_URI: "http://192.168.8.1:11311/"
+    mounts:
+      - source: "/etc/environment"
+        target: "/home/ros/environment"
+        type: bind
+      - source: "/tmp"
+        target: "/tmp"
+        type: bind
+      - source: "/home/cartken/robot_configs"
+        target: "/home/ros/robot_configs"
+        type: bind
+      - source: "/home/cartken/configuration"
+        target: "/home/ros/configuration"
+        type: bind
+      - source: "/dev"
+        target: "/dev"
+        type: bind
+      - source: "/var/tmp"
+        target: "/var/tmp"
+        type: bind
+    state: started
+    recreate: true
+    restart: true
+  retries: 3
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+- name: Create the '/home/cartken/repo' directory if it does not exist
+  ansible.builtin.file:
+    path: "/home/cartken/repo"
+    state: directory
+    mode: "0755"
+
+- name: Re-create the 'devel' container
+  community.docker.docker_container:
+    name: devel
+    image: "{{ __online_docker_registry }}/cartken/repo/raspberry-pi-devel:{{ _rin__deploy_tag }}"
+    interactive: true
+    tty: true
+    init: true
+    restart_policy: unless-stopped
+    privileged: true
+    network_mode: host
+    entrypoint: "/home/ros/ros_release_env/rosmon.sh"
+    env:
+      ROS_MASTER_URI: "http://192.168.8.1:11311/"
+    mounts:
+      - source: "/etc/environment"
+        target: "/home/ros/environment"
+        type: bind
+      - source: "/tmp"
+        target: "/tmp"
+        type: bind
+      - source: "/home/cartken/robot_configs"
+        target: "/home/ros/robot_configs"
+        type: bind
+      - source: "/home/cartken/configuration"
+        target: "/home/ros/configuration"
+        type: bind
+      - source: "/dev"
+        target: "/dev"
+        type: bind
+      - source: "/var/tmp"
+        target: "/var/tmp"
+        type: bind
+      - source: "/home/cartken/repo"
+        target: "/home/ros/src"
+        type: bind
+      - source: "/home/cartken/.ssh"
+        target: "/root/.ssh"
+        type: bind
+    state: present
+    recreate: true
+
+- name: Delete docker password file
+  ansible.builtin.file:
+    path: "/home/cartken/.docker/config.json"
+    state: absent
+
+- name: Prune docker images
+  ansible.builtin.import_role:
+    name: common/docker/prune-images

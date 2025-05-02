@@ -1,0 +1,26 @@
+---
+- name: Check that all required variables are set
+  hosts: localhost
+  roles:
+    - role: common/check-required-variables
+      _rin__required_variables:
+        - cart_number
+        - gitlab_registry_user
+        - gitlab_registry_token
+        - robot_configs_token
+
+- name: Set up a new Raspberry Pi
+  hosts: new-cart-pi
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  roles:
+    - pi/check-host-is-pi
+    - role: pi/setup
+      _rin__cart_number: "{{ cart_number }}"
+      _rin__pi_name: "cart{{ cart_number }}pi"
+      _rin__deploy_tag: "latest"
+      _rin__deploy_token: "{{ gitlab_registry_token }}"
+      _rin__online_docker_registry_user: "{{ gitlab_registry_user }}"
+      _rin__online_docker_registry_token: "{{ gitlab_registry_token }}"
+      _rin__robot_configs_access_token: "{{ robot_configs_token }}"

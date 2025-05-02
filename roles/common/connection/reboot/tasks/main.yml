@@ -1,0 +1,7 @@
+---
+- name: Reboot
+  ansible.builtin.command: reboot
+  become: true
+  async: 10
+  poll: 0 # Makes the playbook continue without waiting for result
+  changed_when: false

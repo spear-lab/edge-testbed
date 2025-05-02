@@ -1,0 +1,122 @@
+---
+- name: Check if an ssd is mounted on the system
+  ansible.builtin.stat:
+    path: /xavier_ssd
+  register: __ssd_path
+
+- name: Fail if no ssd is installed
+  ansible.builtin.fail:
+    msg: No ssd found mounted at /xavier_ssd.
+  when:
+    - not __ssd_path.stat.exists
+    - not __ssd_path.stat.isdir
+
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install the required tools
+  ansible.builtin.package:
+    name:
+      - nvidia-cuda
+      - nvidia-container-csv-cuda
+      - nvidia-container-csv-cudnn
+      - nvidia-container-csv-tensorrt
+      - python3-libnvinfer-dev
+      - git
+      - vim
+      - nano
+    state: latest
+  become: true
+  retries: 3
+  delay: 10
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+# NOTE: We pin the exact versions of docker and docker related packages, which we found to be
+# properly working with CUDA, TensorRT, ... If you want to change this, you have to test everything
+# (build pipeline, build pipeline for machine leargning, running inference on the robot)
+- name: Install exact versions of Nvidia Docker related packages
+  ansible.builtin.apt:
+    name:
+      - nvidia-docker2=2.2.0-1
+      - libnvidia-container-tools=0.9.0~beta.1
+      - libnvidia-container0=0.9.0~beta.1
+      - nvidia-container-runtime=3.1.0-1
+      - nvidia-container-toolkit=1.0.1-1
+    state: present
+    allow_downgrade: true
+  become: true
+  retries: 3
+  delay: 10
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+- name: Install exact versions of Docker packages
+  ansible.builtin.apt:
+    deb: "{{ item }}"
+    state: present
+    allow_downgrade: true
+  with_items:
+    - http://launchpadlibrarian.net/560832335/containerd_1.5.2-0ubuntu1~18.04.3_arm64.deb
+    - http://launchpadlibrarian.net/511874292/docker.io_19.03.6-0ubuntu1~18.04.3_arm64.deb
+  become: true
+  retries: 3
+  delay: 10
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+- name: Copy 'cartken-nvidia-docker' APT preferences with pinned Docker package versions to '/etc/apt/preferences.d/'
+  ansible.builtin.copy:
+    src: cartken-nvidia-docker
+    dest: /etc/apt/preferences.d/cartken-nvidia-docker
+    owner: root
+    mode: "0644"
+  become: true
+
+- name: Create /xavier_ssd/docker folder if it does not exist
+  ansible.builtin.file:
+    path: /xavier_ssd/docker
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Enable docker.service on boot
+  ansible.builtin.systemd:
+    name: docker.service
+    enabled: true
+  become: true
+
+- name: Enable containerd.service on boot
+  ansible.builtin.systemd:
+    name: containerd.service
+    enabled: true
+  become: true
+
+- name: Install the latest version of python3-pip
+  ansible.builtin.package:
+    name:
+      - python3-pip
+    state: latest
+  become: true
+
+- name: Install Docker SDK python package
+  ansible.builtin.pip:
+    name: docker
+
+- name: Ensure group docker exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+
+- name: Add the user to the docker group
+  ansible.builtin.user:
+    name: cartken
+    groups: docker
+    append: true
+  become: true
+
+- name: Reset SSH connection
+  ansible.builtin.meta: reset_connection

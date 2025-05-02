@@ -1,0 +1,109 @@
+---
+# NOTE: Previously, it was sufficient to run awx.awx.export on all users to include related information, such as:
+# teams, organizations, roles
+# With the current version of AWX this no longer works.
+# (I checked the documentation, AWX module source code, etc.)
+# The command only retrieves a very shallow list of users with no related objects.
+# Thus, the team and organization (RBAC) information is missing.
+# We have to fetch and add this information back in.
+
+- name: Prepare empty 'related' list
+  ansible.builtin.set_fact:
+    related_roles: []
+
+- name: "Get AWX user '{{ item }}'"
+  ansible.builtin.set_fact:
+    specific_user: >
+      {{ query('awx.awx.controller_api',
+          'users',
+          host=env_vars.CONTROLLER_HOST,
+          verify_ssl=env_vars.CONTROLLER_VERIFY_SSL,
+          username=env_vars.CONTROLLER_USERNAME,
+          password=env_vars.CONTROLLER_PASSWORD,
+          query_params={'email': item["email"] },
+          all_pages=True)
+      | first }}
+
+- name: Handle organizations
+  block:
+    - name: Get organizations for user
+      ansible.builtin.set_fact:
+        user_organizations: >
+          {{ query('awx.awx.controller_api',
+              specific_user["related"]["organizations"],
+              host=env_vars.CONTROLLER_HOST,
+              verify_ssl=env_vars.CONTROLLER_VERIFY_SSL,
+              username=env_vars.CONTROLLER_USERNAME,
+              password=env_vars.CONTROLLER_PASSWORD,
+              all_pages=True)
+          | list }}
+
+    - name: Extract only the organization names
+      ansible.builtin.set_fact:
+        user_organizations: "{{ user_organizations | map(attribute='name') }}"
+
+    - name: Append the organization information to the related roles
+      ansible.builtin.set_fact:
+        related_roles: >-
+          {{ related_roles + [
+            {
+                "content_object": {
+                  "name": organization_item,
+                  "type": "organization"
+              },
+              "name": "Member",
+              "type": "role"
+            }
+          ]
+          }}
+      loop: "{{ user_organizations }}"
+      loop_control:
+        loop_var: organization_item
+
+- name: Handle teams
+  block:
+    - name: Get teams for user
+      ansible.builtin.set_fact:
+        user_teams: >
+          {{ query('awx.awx.controller_api',
+              specific_user["related"]["teams"],
+              host=env_vars.CONTROLLER_HOST,
+              verify_ssl=env_vars.CONTROLLER_VERIFY_SSL,
+              username=env_vars.CONTROLLER_USERNAME,
+              password=env_vars.CONTROLLER_PASSWORD,
+              all_pages=True)
+          | list }}
+
+    - name: Extract only the team names
+      ansible.builtin.set_fact:
+        user_teams: "{{ user_teams | map(attribute='name') }}"
+
+    - name: Append the team information to the related roles
+      ansible.builtin.set_fact:
+        related_roles: >-
+          {{ related_roles + [
+            {
+                "content_object": {
+                  "name": team_item,
+                  "type": "team",
+                  "organization": {
+                    "name": "Cartken",
+                    "type": "organization"
+                  }
+              },
+              "name": "Member",
+              "type": "role"
+            }
+          ]
+          }}
+      loop: "{{ user_teams }}"
+      loop_control:
+        loop_var: team_item
+
+- name: Add the related roles to the user
+  ansible.builtin.set_fact:
+    modified_users: >-
+      {{ modified_users |
+        selectattr('email', 'eq', item["email"] ) |
+        map('combine', {'related': { 'roles': related_roles } }) |
+        list | union(modified_users | rejectattr('email', 'eq', item["email"] )) }}

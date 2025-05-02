@@ -1,0 +1,62 @@
+---
+# NOTE/TODO: The decision what team has access to what templates is based on
+# the legacy prod Access/Teams manual configuration - mess
+# We need to reconsider these assignments
+
+- name: Allow every team except Magna-Production to use update and SC&M templates
+  awx.awx.role:
+    teams:
+      - "{{ __field_tech_team }}"
+      - "{{ __sw_slim_team }}"
+      - "{{ __sw_full_team }}"
+    job_templates:
+      - Jetson | Update jetson
+      - Pi | Update raspberry pi
+      - Unified Update
+      - Jetson | Update PCB Firmware via Scotty
+
+      - Pi | Apply Robot Configuration
+      - Jetson | Apply Robot Configuration
+      - Unified Apply Robot Configuration
+    role: execute
+    state: present
+
+- name: Add templates for the Magna Production Team
+  awx.awx.role:
+    teams:
+      - "{{ __magna_prod_team }}"
+    job_templates:
+      - Production | Setup new Jetson
+      - Production | Setup new pi
+      - Production | Pair Jetson with robot
+      - Pi | Test modem power pin configuration
+    role: execute
+    state: present
+
+- name: Add templates for the Field Technican Team
+  awx.awx.role:
+    teams:
+      - "{{ __field_tech_team }}"
+    job_templates:
+      - Production | Setup new Jetson
+      - Production | Setup new pi
+      - Production | Pair Jetson with robot
+      - Production | Setup new Jetson remotely
+      - Pi | Change cart number
+      - Setup new standalone Jetson remotely
+    role: execute
+    state: present
+
+- name: Grant the software-engineering-FULL team access to all templates
+  block:
+    - ansible.builtin.include_role:
+        name: cluster/query-awx-cluster
+      vars:
+        _rin__query_target: "job_templates"
+
+    - awx.awx.role:
+        teams:
+          - "{{ __sw_full_team }}"
+        job_templates: "{{ job_templates }}"
+        role: execute
+        state: present

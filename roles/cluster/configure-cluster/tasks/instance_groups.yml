@@ -1,0 +1,44 @@
+---
+# NOTE: One cannot simply query and delete all intance groups.
+# Instance groups are a complex topic and set of components.
+# The worker node that hosts AWX is considered an instance for example.
+# There is no DELETE endpoint.
+# The easiest way to remove this pod configuration is to set it to absent.
+
+- name: Ensure Pod for Cart Updates exists
+  awx.awx.instance_group:
+    is_container_group: true
+    name: "{{ __container_group_for_cart_updates }}"
+    # Maximum number of concurrent jobs to run on this group. Zero means no limit.
+    max_concurrent_jobs: 0
+    max_forks: 0
+    state: "{{ 'absent' if _rin__reset_configuration else 'present' }}"
+    pod_spec_override:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        namespace: awx
+      spec:
+        containers:
+          - image: "registry.gitlab.com/cartken/it-management/awx-execution-env:latest"
+            imagePullPolicy: Always
+            name: worker
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["NET_ADMIN"]
+            args:
+              - ansible-runner
+              - worker
+              - "--private-data-dir=/runner"
+            resources:
+              requests:
+                cpu: 600m
+                memory: 600Mi
+        tolerations:
+          - key: "usecase"
+            operator: "Equal"
+            value: "awx-jobs"
+            effect: "NoSchedule"
+        imagePullSecrets:
+          - name: awx-deployment-ee-pull-credentials

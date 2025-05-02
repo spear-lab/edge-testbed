@@ -1,0 +1,89 @@
+---
+- awx.awx.job_template:
+    name: Pi | Update raspberry pi
+    job_type: run
+    organization: Cartken
+    inventory: Carts
+    project: it-management
+    playbook: playbooks/pi/update/playbook.yml
+    execution_environment: "{{ __latest_cartken_ee_name }}"
+    forks: 10
+    timeout: 10800
+    state: present
+    instance_groups:
+      - "{{ __container_group_for_cart_updates }}"
+    credentials:
+      - "{{ __awx_docker_deb_deploy_token_credential_name }}"
+      - "{{ __gitlab_robot_configs_write_token_credential_name }}"
+      - Pi root access
+    concurrent_jobs_enabled: true
+    survey_enabled: true
+    survey_spec:
+      name: Pi-Update Survey
+      description: Pi-Update Survey
+      spec:
+        - type: text
+          question_name: Which container version do you want to deploy?
+          question_description: The tag used to create the release with Gitlab
+          variable: docker_deploy_tag
+          required: true
+          min: 5
+          max: 50
+          default: latest
+
+        - type: text
+          question_name: Which robot configs branch do you want to pull?
+          variable: robot_configs_branch
+          required: true
+          min: 3
+          max: 50
+          default: master
+
+        - type: multiplechoice
+          question_name: Force override robot configs?
+          variable: force_override
+          required: true
+          choices:
+            - "no"
+            - "yes"
+          default: "no"
+
+        - type: multiplechoice
+          question_name: Pull robot configs repository?
+          variable: pull_robot_configs
+          required: true
+          choices:
+            - "no"
+            - "yes"
+          default: "yes"
+
+        - type: multiplechoice
+          question_name: Update debians?
+          question_description: Update both Cartken and external debians.
+          variable: update_cartken_debians
+          required: true
+          choices:
+            - "no"
+            - "yes"
+          default: "yes"
+
+        - type: multiplechoice
+          question_name: Update the docker container?
+          variable: update_docker_container
+          required: true
+          choices:
+            - "no"
+            - "yes"
+          default: "yes"
+
+        - type: text
+          question_name: AWX-target String
+          question_description: >-
+            Custom string that encodes the robot IDs: e.g. "19,20,148,..".
+            Optional interfaces can be specified: e.g. "19-4,20,148-2,..."
+            [Interfaces: 1-4, 1-3 modem, 4 = wifi]
+          variable: awx_targets_string
+          required: true
+          min: 1
+          max: 250
+          default: "X,"

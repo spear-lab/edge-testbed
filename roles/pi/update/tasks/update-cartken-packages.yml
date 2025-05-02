@@ -1,0 +1,47 @@
+---
+# This step is needed to be able to install certain external packages/dependencies
+# E.g. iperf3.deb cannot be found during "apt install" because the source lists (etc/apt/sources.list..) are outdated
+# -> the entire job fails
+- name: Run apt update
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Create temporary directory for package download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: temp
+  register: tempdir
+
+- name: Download Python wheel ZIP bundle '{{ _rin__deploy_tag }}' from GitLab package registry
+  ansible.builtin.get_url:
+    url: "https://gitlab.com/api/v4/projects/13718138/packages/generic/cartken-wheels/{{ _rin__deploy_tag }}/cartken-wheels.zip"
+    dest: "{{ tempdir.path }}/cartken-wheels.zip"
+    mode: "0644"
+    headers:
+      DEPLOY-TOKEN: "{{ _rin__deploy_token }}"
+  delay: 3
+  retries: 3
+  register: result # Required to make retries work
+  until: result is succeeded # Required to make retries work
+
+- name: Unzip the Python wheel ZIP bundle
+  ansible.builtin.unarchive:
+    src: "{{ tempdir.path }}/cartken-wheels.zip"
+    dest: "{{ tempdir.path }}"
+    remote_src: true
+
+- name: Update Cartken Python packages
+  ansible.builtin.shell:
+    cmd: "python3 -m pip install *.whl"
+    chdir: "{{ tempdir.path }}"
+  become: true
+  changed_when: true
+
+- name: Run Cartken software configuration management
+  ansible.builtin.include_role:
+    name: common/run-scam
+  vars:
+    _rin__cart_name: "cart{{ _rin__cart_number }}"
+    _rin__platform: pi
+    _rin__tag: "{{ _rin__deploy_tag }}"

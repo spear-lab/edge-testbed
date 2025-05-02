@@ -1,0 +1,27 @@
+---
+- block:
+    - ansible.builtin.include_tasks: log-update-started.yml
+    - ansible.builtin.include_tasks: unset-primary-connection.yml
+    - ansible.builtin.include_tasks: set-primary-connection.yml
+
+    - ansible.builtin.include_tasks: update-wifi-driver.yml
+    - ansible.builtin.include_role:
+        name: common/connection/configure-vpn
+      vars:
+        _rin__certificate_type: "cart"
+        _rin__certificate_number: "{{ _rin__cart_number }}"
+    - ansible.builtin.include_tasks: start-docker-pulling.yml
+    - ansible.builtin.include_tasks: pull-robot-configs.yml
+    - ansible.builtin.include_tasks: conclude-docker-pulling.yml
+    - ansible.builtin.include_tasks: update-cartken-packages.yml
+    - ansible.builtin.include_tasks: update-tools-and-dependencies.yml
+    - ansible.builtin.include_tasks: recreate-docker-containers.yml
+
+    - ansible.builtin.include_tasks: unset-primary-connection.yml
+    - ansible.builtin.include_tasks: log-update-finished.yml
+
+  rescue:
+    - ansible.builtin.include_role:
+        name: common/log-update-failure
+      vars:
+        _rin__cart_id: "{{ _rin__cart_number }}"

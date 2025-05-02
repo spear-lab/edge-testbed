@@ -1,0 +1,11 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__query_target:
+        type: str
+        required: true
+
+      _rin__map_attribute:
+        type: str
+        required: false

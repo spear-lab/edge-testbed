@@ -1,0 +1,198 @@
+---
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install necessary Debian packages
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: latest
+  become: true
+
+- name: Add Docker GPG apt Key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  become: true
+
+- name: Get Linux release version
+  ansible.builtin.command: "lsb_release -cs"
+  register: linux_release
+  changed_when: true
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/debian {{ linux_release.stdout }} stable
+    state: present
+  become: true
+
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: Install Docker packages
+  ansible.builtin.package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: latest
+  become: true
+
+- name: Create the 'docker' group
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+
+- name: Add the current user to the 'docker' group
+  ansible.builtin.user:
+    name: cartken
+    groups: docker
+    append: true
+  become: true
+
+- name: Reset SSH connection to refresh user group assignment
+  ansible.builtin.meta: reset_connection
+
+- name: Copy docker deamon config to the PI
+  ansible.builtin.copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: cartken
+    mode: "0664"
+  become: true
+
+- name: Enable and restart 'docker' service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+    enabled: true
+  become: true
+
+- name: Enable 'containerd' service
+  ansible.builtin.service:
+    name: containerd
+    enabled: true
+  become: true
+
+- name: Install Docker SDK python package
+  ansible.builtin.pip:
+    name: docker
+
+- name: Log into GitLab container registry
+  community.docker.docker_login:
+    registry_url: registry.gitlab.com
+    username: "{{ _rin__online_docker_registry_user }}"
+    password: "{{ _rin__online_docker_registry_token }}"
+
+- name: Pull docker release image (this can take a while ..)
+  community.docker.docker_image:
+    name: "registry.gitlab.com/cartken/repo/raspberry-pi-release:{{ _rin__deploy_tag }}"
+    source: pull
+  retries: 3
+  delay: 10
+
+- name: Pull docker devel image (this can take a while ..)
+  community.docker.docker_image:
+    name: "registry.gitlab.com/cartken/repo/raspberry-pi-devel:{{ _rin__deploy_tag }}"
+    source: pull
+  retries: 3
+  delay: 10
+
+- name: Create the '/home/cartken/configuration' directory if it does not exist
+  ansible.builtin.file:
+    path: "/home/cartken/configuration"
+    state: directory
+    mode: "0755"
+
+- name: Create the 'release' container
+  community.docker.docker_container:
+    name: release
+    image: "registry.gitlab.com/cartken/repo/raspberry-pi-release:{{ _rin__deploy_tag }}"
+    interactive: true
+    tty: true
+    init: true
+    restart_policy: unless-stopped
+    privileged: true
+    network_mode: host
+    entrypoint: "/home/ros/ros_release_env/rosmon.sh"
+    env:
+      ROS_MASTER_URI: "http://192.168.8.1:11311/"
+    mounts:
+      - source: "/etc/environment"
+        target: "/home/ros/environment"
+        type: bind
+      - source: "/tmp"
+        target: "/tmp"
+        type: bind
+      - source: "/home/cartken/robot_configs"
+        target: "/home/ros/robot_configs"
+        type: bind
+      - source: "/home/cartken/configuration"
+        target: "/home/ros/configuration"
+        type: bind
+      - source: "/dev"
+        target: "/dev"
+        type: bind
+      - source: "/var/tmp"
+        target: "/var/tmp"
+        type: bind
+    state: present
+
+- name: Create the '/home/cartken/repo' directory if it does not exist
+  ansible.builtin.file:
+    path: "/home/cartken/repo"
+    state: directory
+    mode: "0755"
+
+- name: Create the 'devel' container
+  community.docker.docker_container:
+    name: devel
+    image: "registry.gitlab.com/cartken/repo/raspberry-pi-devel:{{ _rin__deploy_tag }}"
+    interactive: true
+    tty: true
+    init: true
+    restart_policy: unless-stopped
+    privileged: true
+    network_mode: host
+    entrypoint: "/home/ros/ros_release_env/rosmon.sh"
+    env:
+      ROS_MASTER_URI: "http://192.168.8.1:11311/"
+    mounts:
+      - source: "/etc/environment"
+        target: "/home/ros/environment"
+        type: bind
+      - source: "/tmp"
+        target: "/tmp"
+        type: bind
+      - source: "/home/cartken/robot_configs"
+        target: "/home/ros/robot_configs"
+        type: bind
+      - source: "/home/cartken/configuration"
+        target: "/home/ros/configuration"
+        type: bind
+      - source: "/dev"
+        target: "/dev"
+        type: bind
+      - source: "/var/tmp"
+        target: "/var/tmp"
+        type: bind
+      - source: "/home/cartken/repo"
+        target: "/home/ros/src"
+        type: bind
+      - source: "/home/cartken/.ssh"
+        target: "/root/.ssh"
+        type: bind
+    state: present
+
+- name: Delete docker password file
+  ansible.builtin.file:
+    path: "/home/cartken/.docker/config.json"
+    state: absent

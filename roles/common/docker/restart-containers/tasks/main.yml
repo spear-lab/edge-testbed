@@ -1,0 +1,15 @@
+---
+- name: "Stop all running containers"
+  ansible.builtin.shell:
+    cmd: "docker stop $(docker ps -aq)"
+  register: output
+  changed_when: output.rc != 0
+
+- name: "Restart the '{{ _rin__containers_to_launch }}' containers"
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+    comparisons:
+      "*": ignore
+  with_items: "{{ _rin__containers_to_launch }}"

@@ -1,0 +1,37 @@
+# Based on:
+# - https://stackoverflow.com/a/70534436
+# - https://serverfault.com/a/814170
+# - https://unix.stackexchange.com/a/168460
+
+# Note: This file needs to have the name "ssh_config" for AWX to work.
+# `-F "/etc/ssh/ssh_config"` refers to the location on the AWX runner (container)
+
+Host 10.*-pi
+Host 10.66.71.*
+    ProxyCommand nc "%h" %p
+    BatchMode yes
+    PasswordAuthentication no
+
+# Important:
+# SSH config files get read from top to bottom.
+# It triggers at every match (e.g. station-* and station-*-jetson)
+# that fits the current target host (e.g. station-1-jetson).
+# If a property is set it cannot be unset or overwritten.
+# Make sure that the "narrower" pattern (e.g. station-*-jetson) comes first (before station-*).
+# Make sure that the unwanted props (from station-*) are not used (for station jetsons or pis), so negate them.
+
+# https://unix.stackexchange.com/questions/606832/ssh-config-global-settings-vs-host
+# http://mrgossett.com/post/ssh-config-global-settings/
+# I.e. Even if host matches Host category above, it will continue going down until all properties have been set.
+# If you want to override this default, simply specify the properties in the host group above.
+# (The first matching property will be used, not the last.)
+Host *
+    User                   spear
+    StrictHostKeyChecking  no
+    UserKnownHostsFile     /dev/null
+    IdentityFile           ~/.ssh/id_rsa
+    ControlMaster          auto
+    # Note: If the problem should arise that the same host is proxied to (.e.g ssh ..52 -> ..50; ssh ..100 -> ..50).
+    # It is likely that this bug occurs due to the same control file being reused (~cache).
+    ControlPath            /tmp/ssh_mux_%h_%p_%r
+    ControlPersist         1200s

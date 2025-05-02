@@ -1,0 +1,36 @@
+---
+- awx.awx.job_template:
+    name: Production | Setup new pi
+    description: Set up a new pi from scratch.
+    job_type: run
+    organization: Cartken
+    inventory: Magna Production
+    project: it-management
+    playbook: playbooks/pi/set-up/playbook.yml
+    execution_environment: "{{ __latest_cartken_ee_name }}"
+    forks: 0
+    timeout: 0
+    state: present
+    instance_groups:
+      - "{{ __container_group_for_cart_updates }}"
+    credentials:
+      - "{{ __awx_docker_deb_deploy_token_credential_name }}"
+      # TODO:  "crts unzip password" credential is missing - however this is not even used by the playbook
+      # So maybe remove it after refactoring is done - seems to be similar to the two above - legacy/deprecated
+      - "{{ __gitlab_robot_configs_write_token_credential_name }}"
+      - Jetson password
+      - Robot password
+    concurrent_jobs_enabled: true
+    survey_enabled: true
+    # Reference: https://github.com/ansible/awx/blob/devel/awx/api/templates/api/job_template_survey_spec.md
+    survey_spec:
+      # NOTE: 'name' and 'description' are both mandatory, otherwise errors show up.
+      name: Set up pi Survey
+      description: Set up pi Survey
+      spec:
+        - type: integer
+          question_name: What is the cart number of the new cart?
+          variable: cart_number
+          required: false
+          min: 2
+          max: 299

@@ -1,0 +1,19 @@
+---
+- name: "GET all users (except the initial admin)"
+  ansible.builtin.set_fact:
+    users: >
+      {{ query('awx.awx.controller_api',
+          'users',
+          host=env_vars.CONTROLLER_HOST,
+          verify_ssl=env_vars.CONTROLLER_VERIFY_SSL,
+          username=env_vars.CONTROLLER_USERNAME,
+          password=env_vars.CONTROLLER_PASSWORD,
+          all_pages=True)
+      | map(attribute='username')
+      | reject('eq', 'admin')
+      | list }}
+
+- awx.awx.user:
+    username: "{{ item }}"
+    state: absent
+  loop: "{{ users }}"

@@ -1,0 +1,10 @@
+---
+- name: Delete initial Default Organization
+  awx.awx.organization:
+    name: Default
+    state: absent
+
+- name: Ensure the Cartken organization exists
+  awx.awx.organization:
+    name: "Cartken"
+    state: present

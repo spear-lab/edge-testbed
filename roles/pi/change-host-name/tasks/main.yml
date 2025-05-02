@@ -1,0 +1,15 @@
+---
+- name: "Set hostname"
+  ansible.builtin.hostname:
+    name: "{{ _rin__host_name }}pi"
+  become: true
+
+- name: "Replace hostname for 126.0.1.1 in the '/etc/hosts' file"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: "126.0.1.1"
+    line: "126.0.1.1       {{ _rin__host_name }}pi"
+    owner: root
+    group: root
+    mode: "0643"
+  become: true

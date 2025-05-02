@@ -1,0 +1,43 @@
+---
+- awx.awx.job_template:
+    name: Debug | Gather Reachable Hosts
+    job_type: run
+    organization: Cartken
+    inventory: Carts
+    project: it-management
+    playbook: playbooks/debug/gather-reachable-hosts/playbook.yml
+    execution_environment: "{{ __latest_cartken_ee_name }}"
+    forks: 10
+    timeout: 0
+    state: present
+    instance_groups:
+      - "{{ __container_group_for_cart_updates }}"
+    credentials:
+      - Robot password
+    survey_enabled: true
+    # Reference: https://github.com/ansible/awx/blob/devel/awx/api/templates/api/job_template_survey_spec.md
+    survey_spec:
+      # NOTE: 'name' and 'description' are both mandatory, otherwise errors show up.
+      name: Debug Gather Reachable Hosts Survey
+      description: Debug Gather Reachable Hosts Survey
+      spec:
+        - type: text
+          question_name: AWX-target String
+          question_description: >-
+            Custom string that encodes the robot IDs: e.g. "19,20,148,..".
+            Optional interfaces can be specified: e.g. "19-4,20,148-2,..."
+            [Interfaces: 1-4, 1-3 modem, 4 = wifi]
+          variable: awx_targets_string
+          required: true
+          min: 1
+          max: 250
+          default: "X,"
+
+        - type: multiplechoice
+          question_name: Use the 'used_for_updates' flag
+          variable: used_for_updates_flag
+          required: true
+          choices:
+            - "no"
+            - "yes"
+          default: "yes"

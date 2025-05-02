@@ -1,0 +1,14 @@
+---
+- ansible.builtin.include_tasks: set-hostname.yml
+- ansible.builtin.include_tasks: set-locale.yml
+- ansible.builtin.include_tasks: update-wifi-driver.yml
+- ansible.builtin.include_tasks: install-tools-and-dependencies.yml
+- ansible.builtin.include_tasks: install-and-create-docker.yml
+- ansible.builtin.include_tasks: install-cartken-packages.yml
+- ansible.builtin.include_role:
+    name: common/connection/configure-vpn
+  vars:
+    _rin__certificate_type: "cart"
+    _rin__certificate_number: "{{ _rin__cart_number }}"
+- ansible.builtin.include_tasks: remove-initial-cartken-vpn-certificates.yml
+- ansible.builtin.include_tasks: power-cycle-and-finish.yml

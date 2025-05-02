@@ -1,0 +1,29 @@
+---
+# Add folder with our custom ansible-lint rules
+rulesdir:
+  - "./ansible-lint/rules"
+
+# The default rules need to be activated again when using a custom additional rules
+use_default_rules: true
+
+skip_list:
+  # We have custom naming for input variables of roles
+  - "var-naming[no-role-prefix]"
+  # Jinja templates only at the end of the 'name'
+  - "name[template]"
+  # All tasks must be named
+  - "name[missing]"
+  # All plays must be named
+  - "name[play]"
+  # Package installs should not use latest
+  - "package-latest"
+  # The original rule matches for this pattern ``^[a-z][a-z0-9_]*$`` (snake_case) however, we use kebab-case for now.
+  - "role-name"
+  # This rule warns against the use of run_once when the strategy is set to free.
+  - "run-once[play]"
+  # Use failed_when and specify error conditions instead of using ignore_errors.
+  - "ignore-errors"
+
+exclude_paths:
+  - ".gitlab-ci.yml"
+  - "ansible-builder/**"

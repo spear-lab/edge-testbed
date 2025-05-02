@@ -1,0 +1,20 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__pi_name:
+        type: str
+        required: true
+      _rin__deploy_tag:
+        type: str
+        required: true
+      _rin__deploy_token:
+        description: "GitLab deploy token that has read access to repo package registry"
+        type: str
+        required: true
+      _rin__online_docker_registry_user:
+        type: str
+        required: true
+      _rin__online_docker_registry_token:
+        type: str
+        required: true

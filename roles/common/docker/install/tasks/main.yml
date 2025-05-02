@@ -1,0 +1,5 @@
+---
+- ansible.builtin.include_tasks: install-docker-18-04.yml
+  when: __ubuntu_version == "18-04"
+- ansible.builtin.include_tasks: install-docker-20-04.yml
+  when: __ubuntu_version == "20-04"

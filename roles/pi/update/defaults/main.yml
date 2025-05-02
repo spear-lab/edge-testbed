@@ -1,0 +1,4 @@
+---
+__online_docker_registry: "registry.gitlab.com"
+__docker_pull_timeout: 7200
+__docker_pull_poll_interval: 60

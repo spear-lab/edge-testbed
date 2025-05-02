@@ -1,0 +1,11 @@
+---
+_rin__force_download: false
+
+__vpn_server_ip: 35.234.122.87
+__pki_path: "/etc/openvpn-cartken-volume/easyrsa-components/easyrsa3/pki/"
+
+__certificate_source_name: "{{ _rin__certificate_type }}-{{ _rin__certificate_number }}"
+__certificate_target_name: "{{ (_rin__certificate_type == 'cart') | ternary('robot', _rin__certificate_type) }}"
+
+# NOTE: Unique for every host to avoid concurrency issues on localhost
+__ansible_runner_tmp_credentials_path: "/tmp/{{ _rin__certificate_type }}-{{ _rin__certificate_number }}-credentials/"

@@ -1,0 +1,6 @@
+---
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    # NOTE: Make sure robot has time to power cycle
+    delay: 60
+    timeout: 600

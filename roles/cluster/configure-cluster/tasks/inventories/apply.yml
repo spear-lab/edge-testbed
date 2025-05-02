@@ -1,0 +1,47 @@
+---
+- name: Add Carts Inventory
+  block:
+    - awx.awx.inventory:
+        name: Carts
+        organization: Cartken
+        state: present
+
+    - awx.awx.inventory_source:
+        name: it-management
+        state: present
+        source: scm
+        source_project: it-management
+        source_path: inventories/hosts
+        inventory: Carts
+        # Refresh inventory data from its source each time a job is run.
+        update_on_launch: false
+        organization: Cartken
+
+    - name: Update the inventory source to ensure latest inventory use.
+      awx.awx.inventory_source_update:
+        name: it-management
+        inventory: Carts
+        organization: Cartken
+
+- name: Add Magna Production Inventory
+  block:
+    - awx.awx.inventory:
+        name: Magna Production
+        organization: Cartken
+        state: present
+
+    - awx.awx.inventory_source:
+        name: production_inventory
+        state: present
+        source: scm
+        source_project: it-management
+        source_path: inventories/production_inventory
+        inventory: Magna Production
+        update_on_launch: false
+        organization: Cartken
+
+    - name: Update the inventory source to ensure latest inventory use.
+      awx.awx.inventory_source_update:
+        name: production_inventory
+        inventory: Magna Production
+        organization: Cartken

@@ -1,0 +1,26 @@
+---
+- name: Check that all required variables are set
+  hosts: localhost
+  roles:
+    - role: common/check-required-variables
+      _rin__required_variables:
+        - awx_targets_string
+        - used_for_updates_flag
+
+- import_playbook: "{{ ansible_config_file | dirname }}/playbooks/common/gather-reachable-hosts.yml"
+  vars:
+    _pin__machine_type: "jetson"
+    _pin__awx_targets_string: "{{ awx_targets_string }}"
+    _pin__used_for_updates: "{{ used_for_updates_flag | bool }}"
+
+- hosts: reachable_awx_targets_hosts
+  tasks:
+    - name: Get Host Name
+      ansible.builtin.command:
+        cmd: hostname
+      register: result
+      changed_when: false
+
+    - name: Display Host Name
+      ansible.builtin.debug:
+        var: result

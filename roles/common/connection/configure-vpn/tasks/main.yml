@@ -1,0 +1,8 @@
+---
+- name: "Check if cart has folder with new vpn crts"
+  ansible.builtin.stat:
+    path: "/etc/openvpn/cartken/2.0/crt/{{ __certificate_target_name }}.crt"
+  register: __new_vpn_crts
+
+- ansible.builtin.include_tasks: fetch-and-copy-vpn-credentials.yml
+  when: (_rin__force_download | bool) or (not __new_vpn_crts.stat.exists)

@@ -1,0 +1,9 @@
+---
+- name: Power cycle the robot
+  ansible.builtin.include_role:
+    name: common/connection/power-cycle
+
+- name: Sleep for 180 seconds so the pi comes back
+  ansible.builtin.wait_for:
+    timeout: 180
+  delegate_to: localhost

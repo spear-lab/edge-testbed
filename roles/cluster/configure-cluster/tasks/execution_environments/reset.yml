@@ -1,0 +1,19 @@
+---
+- name: "GET all EEs"
+  ansible.builtin.set_fact:
+    execution_environments: >
+      {{ query('awx.awx.controller_api',
+          'execution_environments',
+          host=env_vars.CONTROLLER_HOST,
+          verify_ssl=env_vars.CONTROLLER_VERIFY_SSL,
+          username=env_vars.CONTROLLER_USERNAME,
+          password=env_vars.CONTROLLER_PASSWORD,
+          all_pages=True)
+      | map(attribute='name')
+      | reject('in', ['Control Plane Execution Environment', 'quay.io/ansible/awx-ee'])
+      | list }}
+
+- awx.awx.execution_environment:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ execution_environments }}"

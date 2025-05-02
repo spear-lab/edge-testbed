@@ -1,0 +1,11 @@
+---
+- name: Ensure the it-management repository exists as an AWX project and is synchronized
+  awx.awx.project:
+    name: it-management
+    organization: Cartken
+    state: present
+    scm_type: git
+    scm_url: https://gitlab.com/cartken/it-management
+    scm_branch: "{{ _rin__branch }}"
+    credential: "{{ __it_management_read_repository_credential_name }}"
+    update_project: true

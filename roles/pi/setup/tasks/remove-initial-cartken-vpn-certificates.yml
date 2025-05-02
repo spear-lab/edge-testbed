@@ -1,0 +1,18 @@
+---
+- name: Delete the initial VPN certificates
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/openvpn/crt/initial.crt"
+    - "/etc/openvpn/crt/initial.key"
+    - "/etc/openvpn/cartken/2.0/crt/initial.crt"
+    - "/etc/openvpn/cartken/2.0/crt/initial.key"
+  become: true
+
+# The following task is needed in case we use a sd which has this archive.
+# Otherwise we risk having robots driving around with all our certs.
+- name: Delete the (legacy) archive with certificates
+  ansible.builtin.file:
+    path: "/home/cartken/crts.zip"
+    state: absent

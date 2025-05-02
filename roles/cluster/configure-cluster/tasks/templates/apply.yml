@@ -1,0 +1,37 @@
+---
+- name: Delete initial Demo Job Template
+  awx.awx.job_template:
+    name: Demo Job Template
+    job_type: run
+    state: absent
+
+- name: Configure Playbooks with single Templates
+  block:
+    - ansible.builtin.include_tasks: "{{ ansible_config_file | dirname }}/playbooks/{{ item }}/template.yml"
+      loop:
+        - "pi/update"
+        - "pi/apply-robot-configuration"
+        - "pi/change-cart-number"
+        - "pi/run-modem-power-pin-test"
+        - "pi/set-up"
+        - "jetson/update"
+        - "jetson/update-linux4tegra"
+        - "jetson/update-pcb-firmware"
+        - "jetson/apply-robot-configuration"
+        - "jetson/debug-disk-space"
+        - "jetson/change-backend-url-of-robot"
+        - "jetson/pair-with-robot"
+        - "robot/update"
+        - "robot/apply-configuration"
+        - "debug/gather-reachable-hosts"
+        - "flashing-station/download-jetson-images"
+        - "flashing-station/flash-jetson"
+
+- name: Configure Playbooks with multiple Templates
+  block:
+    - ansible.builtin.include_tasks: "{{ ansible_config_file | dirname }}/playbooks/{{ item }}.yml"
+      loop:
+        - "jetson/set-up-linked/templates/setup_new_jetson"
+        - "jetson/set-up-linked/templates/setup_new_jetson_remotely"
+        - "jetson/set-up-standalone/templates/setup_new_standalone_jetson_remotely"
+        - "jetson/set-up-standalone/templates/setup_new_standalone_jetson_with_flashing_station"

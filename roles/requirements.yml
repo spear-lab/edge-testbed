@@ -1,0 +1,8 @@
+---
+# NOTE: AWX requires the ansible-galaxy requirements (this file) to be in 'roles/requirements.yml'
+
+collections:
+  - ansible.posix
+  - community.general
+  - community.docker
+  - awx.awx

@@ -1,0 +1,13 @@
+---
+- name: Configure Google OAuth2
+  awx.awx.settings:
+    settings:
+      SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: "{{ cartken_google_oauth2_key }}"
+      SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: "{{ cartken_google_oauth2_secret }}"
+      SOCIAL_AUTH_GOOGLE_OAUTH2_ORGANIZATION_MAP:
+        Cartken:
+          users: true
+      SOCIAL_AUTH_GOOGLE_OAUTH2_TEAM_MAP:
+        Cartken:
+          organization: Cartken
+          users: true

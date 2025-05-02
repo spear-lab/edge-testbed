@@ -1,0 +1,6 @@
+---
+- name: Unset existing primary connection
+  # Failures are ignored in case the connection does not exist
+  ansible.builtin.shell: "ip route del default metric 500 || true"
+  become: true
+  changed_when: true

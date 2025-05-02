@@ -1,0 +1,11 @@
+---
+- ansible.builtin.include_role:
+    name: cluster/query-awx-cluster
+  vars:
+    _rin__query_target: "teams"
+
+- awx.awx.team:
+    name: "{{ item }}"
+    organization: Cartken
+    state: absent
+  loop: "{{ teams }}"

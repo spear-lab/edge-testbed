@@ -1,0 +1,9 @@
+---
+- name: Checking that all required variables are set
+  ansible.builtin.fail:
+    msg: "Required variable '{{ item }}' is not set"
+  when: vars[item] is undefined
+  loop: "{{ _rin__required_variables }}"
+  # NOTE: During local development it can be handy to not be forced to provide all variables.
+  # By running the ansible-playbook command with "--skip-tags check-mode" this role gets skipped.
+  tags: ["check-mode"]

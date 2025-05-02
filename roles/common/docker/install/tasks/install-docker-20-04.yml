@@ -1,0 +1,83 @@
+---
+- name: "Check if an ssd is mounted on the system"
+  ansible.builtin.stat:
+    path: /xavier_ssd
+  register: __ssd_path
+
+- name: "Fail if no ssd is installed"
+  ansible.builtin.fail:
+    msg: "No ssd found mounted at /xavier_ssd"
+  when:
+    - not __ssd_path.stat.exists
+    - not __ssd_path.stat.isdir
+
+- name: "Update cache"
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: "Install the latest version of python3-pip"
+  ansible.builtin.package:
+    name:
+      - python3-pip
+    state: latest
+  become: true
+
+# requests needs to be requests<2.2.29 as of 8.5.2023
+# https://github.com/docker/docker-py/issues/3113
+- name: "Install pip packages"
+  ansible.builtin.pip:
+    name:
+      - requests==2.26.0
+
+- name: "Install the required tools"
+  ansible.builtin.package:
+    name:
+      - nvidia-container-runtime
+      - nvidia-docker2
+      - nvidia-cuda
+      - python3-libnvinfer-dev
+      - git
+      - vim
+      - nano
+    state: latest
+  become: true
+
+- name: "Create /xavier_ssd/docker folder if it does not exist"
+  ansible.builtin.file:
+    path: /xavier_ssd/docker
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: "Enable docker.service on boot"
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+  become: true
+
+- name: "Enable containerd.service on boot"
+  ansible.builtin.service:
+    name: containerd
+    enabled: true
+  become: true
+
+- name: "Install Docker SDK python package"
+  ansible.builtin.pip:
+    name: docker
+
+- name: "Ensure group docker exists"
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+
+- name: "Add the user to the docker group"
+  ansible.builtin.user:
+    name: cartken
+    groups: docker
+    append: true
+  become: true
+
+- name: "Reset SSH connection"
+  ansible.builtin.meta: reset_connection

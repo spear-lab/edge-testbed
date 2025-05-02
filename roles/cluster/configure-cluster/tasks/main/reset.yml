@@ -1,0 +1,23 @@
+---
+- ansible.builtin.include_tasks: tasks/templates/reset.yml
+
+# TODO not yet implemented
+# - ansible.builtin.include_tasks: tasks/settings/reset.yml
+
+- ansible.builtin.include_tasks: instance_groups.yml
+
+- ansible.builtin.include_tasks: tasks/execution_environments/reset.yml
+
+- ansible.builtin.include_tasks: tasks/inventories/reset.yml
+
+- ansible.builtin.include_tasks: tasks/projects/reset.yml
+
+- ansible.builtin.include_tasks: tasks/users/reset.yml
+
+- ansible.builtin.include_tasks: tasks/teams/reset.yml
+
+- ansible.builtin.include_tasks: tasks/credentials/reset.yml
+
+- ansible.builtin.include_tasks: credential_types.yml
+
+- ansible.builtin.include_tasks: tasks/organizations/reset.yml
