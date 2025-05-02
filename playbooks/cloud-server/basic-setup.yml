@@ -1,0 +1,14 @@
+---
+
+- name: Basic Setup
+  hosts: cloud-server
+
+  pre_tasks:
+    - name: Update apt cache and upgrade packages
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+
+  roles:
+    - role: common/install-aux-tools

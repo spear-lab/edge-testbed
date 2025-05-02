@@ -5,3 +5,5 @@ artifacts
 env
 *.egg*
 build
+.ansible
+.become_pwds

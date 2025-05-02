@@ -6,7 +6,6 @@
 # Note: This file needs to have the name "ssh_config" for AWX to work.
 # `-F "/etc/ssh/ssh_config"` refers to the location on the AWX runner (container)
 
-Host 10.*-pi
 Host 10.66.71.*
     ProxyCommand nc "%h" %p
     BatchMode yes

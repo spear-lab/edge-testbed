@@ -1,0 +1,12 @@
+---
+
+- name: Install auxiliary packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - vim
+      - tree
+      - neofetch
+      - bat
+      - ripgrep
+    state: present

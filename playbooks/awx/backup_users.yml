@@ -1,4 +1,5 @@
 ---
+
 - name: Check that all required variables are set
   hosts: localhost
   roles:

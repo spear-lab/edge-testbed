@@ -4,8 +4,9 @@
 ansible_user=spear
 ansible_connection=ssh
 
-[vpn-server]
-localhost
+[cloud-server]
+37.27.29.137
+# localhost
 # 10.66.71.254
 
 [master-nuc]

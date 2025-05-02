@@ -37,3 +37,9 @@ The only working solution seems to be the following:
 - One easy way of doing this locally is to point to the itm-cli secret.
   - `export ANSIBLE_VAULT_PASSWORD_FILE=~/cartken_itm_cli/.vault_pwd`
 - The CI uses a special Gitlab CI/UI variable for this.
+
+
+
+# TODO DELME
+
+ansible-playbook playbooks/cloud-server/basic-setup.yml --become --become-password-file=.become_pwds/cloud_server_spear 
