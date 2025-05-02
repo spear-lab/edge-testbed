@@ -1,7 +1,7 @@
 ---
 - name: Set auxiliary vars
   ansible.builtin.set_fact:
-    user_file_path: "{{ ansible_config_file | dirname }}/roles/cluster/configure-cluster/files/exported_users.json"
+    user_file_path: "{{ ansible_config_file | dirname }}/roles/awx/configure-cluster/files/exported_users.json"
 
 - name: Export all users
   awx.awx.export:
@@ -56,6 +56,6 @@
 - name: Encrypt the JSON file
   ansible.builtin.shell: >-
     export ANSIBLE_VAULT_PASSWORD_FILE=~/cartken_itm_cli/.vault_pwd &&
-    ansible-vault encrypt "{{ ansible_config_file | dirname }}/roles/cluster/configure-cluster/files/exported_users.json"
+    ansible-vault encrypt "{{ ansible_config_file | dirname }}/roles/awx/configure-cluster/files/exported_users.json"
   no_log: true
   changed_when: true

@@ -32,7 +32,7 @@ To checkout these changes on the staging cluster one has to do this:
     - Via the [AWX UI](https://staging-infrastructure.cartken.com/#/projects)
     - By running a playbook locally
         ```bash
-        ansible-playbook playbooks/cluster/sync_project.yml -e "cluster_name=<TARGET_CLUSTER_NAME> branch='<YOUR_FEATURE_BRANCH_NAME>'" --ask-vault-pass
+        ansible-playbook playbooks/awx/sync_project.yml -e "cluster_name=<TARGET_CLUSTER_NAME> branch='<YOUR_FEATURE_BRANCH_NAME>'" --ask-vault-pass
         ```
         - Available Clusters:
             - "production"
@@ -51,7 +51,7 @@ One could update the cluster manually via its GUI - but this is exactly what we 
 
 Instead one can run the playbook that configures the entire cluster as follows:
 ```bash
- ansible-playbook playbooks/cluster/configure_cluster.yml -e "cluster_name=<TARGET_CLUSTER_NAME> branch='<YOUR_FEATURE_BRANCH_NAME>'" --ask-vault-pass
+ ansible-playbook playbooks/awx/configure_cluster.yml -e "cluster_name=<TARGET_CLUSTER_NAME> branch='<YOUR_FEATURE_BRANCH_NAME>'" --ask-vault-pass
 ```
 If the `branch='<YOUR_FEATURE_BRANCH_NAME>'` parameter is not provided the `master` branch will be used.
 

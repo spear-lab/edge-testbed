@@ -20,5 +20,5 @@
     - "files/initial_jetson_password.yml"
   environment: "{{ env_vars }}"
   roles:
-    - role: cluster/sync-awx-project
+    - role: awx/sync-awx-project
       _rin__branch: "{{ branch | default('master') }}"

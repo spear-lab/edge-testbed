@@ -50,7 +50,7 @@
 - name: Grant the software-engineering-FULL team access to all templates
   block:
     - ansible.builtin.include_role:
-        name: cluster/query-awx-cluster
+        name: awx/query-awx-cluster
       vars:
         _rin__query_target: "job_templates"
 

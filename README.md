@@ -26,8 +26,8 @@ Note: If you have another image name/version you need to adjust/create a new EE 
 When you see something like this: 
 
 ```
-internal-error: Unexpected error code 1 from execution of: ansible-playbook -i localhost, --syntax-check playbooks/cluster/sync_project.yml
-playbooks/cluster/sync_project.yml:1 ERROR! Attempting to decrypt but no vault secrets found
+internal-error: Unexpected error code 1 from execution of: ansible-playbook -i localhost, --syntax-check playbooks/awx/sync_project.yml
+playbooks/awx/sync_project.yml:1 ERROR! Attempting to decrypt but no vault secrets found
 ```
 
 This means that the linter tried to lint playbooks that use encrypted/vaulted files.
