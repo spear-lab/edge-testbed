@@ -26,4 +26,5 @@ uninstall-cli:
 
 .PHONY: install-ansible-requirements 
 install-ansible-requirements:
+    ansible-galaxy collection install -r requirements.yml
 	ansible-galaxy role install -r roles/requirements.yml -p roles/third-party

@@ -19,5 +19,9 @@
       #   # IMPORTANT: If issues reaching AWX should occur - try removing this
       #   - traefik
   roles:
+    # Install & set up K3S
     - role: third-party/xanmanning.k3s
+    # Install helm
     - role: third-party/gantsign.helm
+    # Install prometheus for cluster metrics
+    - role: cloud-server/install-prometheus
