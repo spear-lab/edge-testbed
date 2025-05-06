@@ -5,9 +5,11 @@ collections:
   - ansible.posix
   - community.general
   - community.docker
+  - community.kubernetes
   - awx.awx
 
 roles:
   - src: gantsign.golang
   - src: geerlingguy.docker
   - src: xanmanning.k3s
+  - src: gantsign.helm
