@@ -10,3 +10,4 @@ collections:
 roles:
   - src: gantsign.golang
   - src: geerlingguy.docker
+  - src: xanmanning.k3s
