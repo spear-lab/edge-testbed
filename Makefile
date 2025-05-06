@@ -23,3 +23,7 @@ develop-cli:
 .PHONY: uninstall-cli
 uninstall-cli:
 	$(PIP) uninstall --yes $(use_break_system_packages) itm-cli 
+
+.PHONY: install-ansible-requirements 
+install-ansible-requirements:
+	ansible-galaxy role install -r roles/requirements.yml -p roles/third-party

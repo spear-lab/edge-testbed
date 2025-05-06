@@ -7,3 +7,4 @@ env
 build
 .ansible
 .become_pwds
+third-party

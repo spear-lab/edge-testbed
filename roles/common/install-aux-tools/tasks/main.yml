@@ -3,10 +3,16 @@
 - name: Install auxiliary packages
   become: true
   ansible.builtin.apt:
-    name:
+    pkg:
       - vim
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - git
+      - make
       - tree
       - neofetch
       - bat
       - ripgrep
-    state: present
+    state: latest
+    update_cache: true
