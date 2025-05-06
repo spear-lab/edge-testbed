@@ -1,0 +1,28 @@
+---
+
+- name: Clone awx-operator repository
+  ansible.builtin.git:
+    repo: https://github.com/ansible/awx-operator.git
+    version: '2.19.1'
+    dest: "awx-operator"
+
+- name: Copy files over
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "awx-operator/{{ item }}"
+    mode: "0644"
+  loop:
+    - kustomization.yml
+    - spear-awx.yml
+
+- name: Build AWX Operator manifests with Kustomize
+  ansible.builtin.command:
+    cmd: kubectl kustomize awx-operator
+  register: kustomize_output
+  changed_when: false
+
+- name: Apply AWX Operator manifests
+  kubernetes.core.k8s:
+    state: present
+    namespace: awx
+    definition: "{{ kustomize_output.stdout }}"

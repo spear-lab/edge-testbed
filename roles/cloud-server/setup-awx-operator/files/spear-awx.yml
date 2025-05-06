@@ -1,0 +1,17 @@
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  # All K8s objects belonging to this "Deployment" will have this prefix.
+  name: spear-awx
+spec:
+  # One of the pieces to allow to reach the AWX FE/GUI from outside.
+  service_type: LoadBalancer
+  loadbalancer_protocol: https
+  loadbalancer_port: 443
+  nodeport_port: 30080
+  ingress_type: none
+  # Fixing the postgres bug and fixing its image version.
+  postgres_image: quay.io/sclorg/postgresql-15-c9s
+  postgres_image_version: "20240731"
+  postgres_data_volume_init: true
