@@ -1,0 +1,44 @@
+---
+- name: VPN Setup
+  hosts: cloud-server
+  vars:
+    vpn_image: kylemanna/openvpn
+    ovpn_data_volume_name: ovpn-data-spear
+    ovpn_data_volume_path: /var/lib/docker/volumes/ovpn-data-spear/_data/
+
+  tasks:
+    - name: Check if OpenVPN config exists
+      ansible.builtin.stat:
+        path: "{{ ovpn_data_volume_path }}/openvpn.conf"
+      register: ovpn_config
+
+    - name: Generate OpenVPN config
+      community.docker.docker_container:
+        name: ovpn_genconfig
+        image: "{{ vpn_image }}"
+        command: ovpn_genconfig -u udp://YOUR.SERVER.IP.OR.DOMAIN:{{ vpn_port }}
+        volumes:
+          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+        auto_remove: true
+      when: not ovpn_config.stat.exists
+
+    - name: Check if OpenVPN PKI CA exists
+      ansible.builtin.stat:
+        path: "{{ ovpn_data_volume_path }}/pki"
+      register: ovpn_pki
+
+    - name: Init the OpenVPN PKI
+      community.docker.docker_container:
+        name: ovpn_initpki
+        image: "{{ vpn_image }}"
+        # NOTE: This is not recommended/unsecure.
+        # The container awaits interactive user input that is tricky to do via ansible.
+        # FUTURE WORK
+        command: ovpn_initpki nopass
+        volumes:
+          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+        env:
+          EASYRSA_BATCH: "1"
+          EASYRSA_REQ_CN: "SPEAR EDGE TESTBED VPN Server"
+        auto_remove: true
+      when: not ovpn_pki.stat.exists
