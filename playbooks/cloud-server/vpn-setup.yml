@@ -5,6 +5,7 @@
     vpn_image: kylemanna/openvpn
     ovpn_data_volume_name: ovpn-data-spear
     ovpn_data_volume_path: /var/lib/docker/volumes/ovpn-data-spear/_data/
+    common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
 
   tasks:
     - name: Check if OpenVPN config exists
@@ -16,7 +17,7 @@
       community.docker.docker_container:
         name: ovpn_genconfig
         image: "{{ vpn_image }}"
-        command: ovpn_genconfig -u udp://YOUR.SERVER.IP.OR.DOMAIN:{{ vpn_port }}
+        command: ovpn_genconfig -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
         volumes:
           - "{{ ovpn_data_volume_name }}:/etc/openvpn"
         auto_remove: true
@@ -27,18 +28,37 @@
         path: "{{ ovpn_data_volume_path }}/pki"
       register: ovpn_pki
 
-    - name: Init the OpenVPN PKI
-      community.docker.docker_container:
-        name: ovpn_initpki
-        image: "{{ vpn_image }}"
-        # NOTE: This is not recommended/unsecure.
-        # The container awaits interactive user input that is tricky to do via ansible.
-        # FUTURE WORK
-        command: ovpn_initpki nopass
-        volumes:
-          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
-        env:
-          EASYRSA_BATCH: "1"
-          EASYRSA_REQ_CN: "SPEAR EDGE TESTBED VPN Server"
-        auto_remove: true
+    - name: Generate the PKI
       when: not ovpn_pki.stat.exists
+      block:
+
+        - name: Start OpenVPN container for PKI initiation
+          community.docker.docker_container:
+            name: ovpn_initpki
+            image: "{{ vpn_image }}"
+            command: sleep infinity
+            volumes:
+              - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+            env:
+              EASYRSA_REQ_CN: "{{ common_name }}"
+            auto_remove: false
+            state: started
+
+        - name: Run ovpn_initpki with expect for passphrase prompts
+          ansible.builtin.expect:
+            command: docker exec -i ovpn_initpki ovpn_initpki
+            responses:
+              'Enter New CA Key Passphrase:': "ca_pwd_todo"
+              'Re-Enter New CA Key Passphrase:': "ca_pwd_todo"
+              'Common Name \(eg: your user, host, or server name\) \[Easy-RSA CA\]': "{{ common_name }}"
+              'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
+            timeout: 300
+          vars:
+            ca_passphrase: "1234todo"
+          no_log: false
+
+        - name: Remove the OpenVPN PKI init container
+          community.docker.docker_container:
+            name: ovpn_initpki
+            state: absent
+            force_kill: true
