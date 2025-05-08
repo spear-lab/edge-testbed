@@ -6,6 +6,7 @@
     ovpn_data_volume_name: ovpn-data-spear
     ovpn_data_volume_path: /var/lib/docker/volumes/ovpn-data-spear/_data/
     common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
+    update_vpn_config: false
 
   tasks:
     - name: Check if OpenVPN config exists
@@ -13,15 +14,26 @@
         path: "{{ ovpn_data_volume_path }}/openvpn.conf"
       register: ovpn_config
 
-    - name: Generate OpenVPN config
-      community.docker.docker_container:
-        name: ovpn_genconfig
-        image: "{{ vpn_image }}"
-        command: ovpn_genconfig -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
-        volumes:
-          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
-        auto_remove: true
-      when: not ovpn_config.stat.exists
+    - name: Generate the OpenVPN config
+      when: not ovpn_config.stat.exists or update_vpn_config
+      block:
+
+        - name: Generate OpenVPN config
+          community.docker.docker_container:
+            name: ovpn_genconfig
+            image: "{{ vpn_image }}"
+            command: ovpn_genconfig -c -d -N -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
+            volumes:
+              - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+            auto_remove: true
+
+        - name: Remove compression lines from OpenVPN config
+          ansible.builtin.lineinfile:
+            path: "{{ ovpn_data_volume_path }}/openvpn.conf"
+            regexp: '^(comp-lzo no|push "comp-lzo no")$'
+            state: absent
+          become: true
+
 
     - name: Check if OpenVPN PKI CA exists
       ansible.builtin.stat:
@@ -62,3 +74,34 @@
             name: ovpn_initpki
             state: absent
             force_kill: true
+
+    - name: Run OpenVPN Server
+      community.docker.docker_container:
+        name: openvpn
+        image: kylemanna/openvpn
+        detach: true
+        published_ports:
+          - "1194:1194/udp"
+        volumes:
+          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+        capabilities:
+          - NET_ADMIN
+
+
+# -----------------------
+
+    - name: Run OpenVPN client build in Docker
+      ansible.builtin.expect:
+        command: docker run -i -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full TESTNUC nopass
+        responses:
+          'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
+        timeout: 60
+      no_log: false
+
+    - name: Run OpenVPN client build in Docker
+      ansible.builtin.expect:
+        command: docker run -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient TESTNUC separated
+        responses:
+          'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
+        timeout: 60
+      no_log: false
