@@ -22,7 +22,7 @@
           community.docker.docker_container:
             name: ovpn_genconfig
             image: "{{ vpn_image }}"
-            command: ovpn_genconfig -c -d -N -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
+            command: ovpn_genconfig -r 10.66.71.0/24 -p "route 10.66.71.0 255.255.255.0" -c -d -N -s 10.66.70.0/24 -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
             volumes:
               - "{{ ovpn_data_volume_name }}:/etc/openvpn"
             auto_remove: true
@@ -86,13 +86,13 @@
           - "{{ ovpn_data_volume_name }}:/etc/openvpn"
         capabilities:
           - NET_ADMIN
-
+        recreate: "{{ update_vpn_config }}"
 
 # -----------------------
 
     - name: Run OpenVPN client build in Docker
       ansible.builtin.expect:
-        command: docker run -i -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full TESTNUC nopass
+        command: docker run -i -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full TESTALEX nopass
         responses:
           'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
         timeout: 60
@@ -100,7 +100,7 @@
 
     - name: Run OpenVPN client build in Docker
       ansible.builtin.expect:
-        command: docker run -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient TESTNUC separated
+        command: docker run -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient TESTALEX separated
         responses:
           'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
         timeout: 60
