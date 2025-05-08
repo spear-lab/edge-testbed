@@ -8,3 +8,4 @@ build
 .ansible
 .become_pwds
 third-party
+.vault_pwd

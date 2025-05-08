@@ -43,3 +43,5 @@ The only working solution seems to be the following:
 # TODO DELME
 
 ansible-playbook playbooks/cloud-server/basic-setup.yml --become --become-password-file=.become_pwds/cloud_server_spear 
+
+export ANSIBLE_VAULT_PASSWORD_FILE=/root/edge-testbed/.vault_pwd

@@ -1,4 +1,8 @@
 ---
+
+# We use a single dockerized OpenVPN server for our VPN.
+# https://github.com/kylemanna/docker-openvpn/tree/master
+
 - name: VPN Setup
   hosts: cloud-server
   vars:
@@ -17,23 +21,46 @@
     - name: Generate the OpenVPN config
       when: not ovpn_config.stat.exists or update_vpn_config
       block:
-
         - name: Generate OpenVPN config
           community.docker.docker_container:
             name: ovpn_genconfig
             image: "{{ vpn_image }}"
-            command: ovpn_genconfig -r 10.66.71.0/24 -p "route 10.66.71.0 255.255.255.0" -c -d -N -s 10.66.70.0/24 -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
+            # EXPLANATION:
+            # -s : This is the dynamic (~DHCP) IP range for clients.
+            #      The first IP will be used by the server -> 10.66.70.1
+            #      The rest will be used by people connecting to our VPN.
+            # We use dynamic and static IPs.
+            # These are split into x.y.70.z/24 and x.y.71.z/24 to avoid collisions.
+            # -r : Adds a route to the vpn server and tells it to also handle the static hosts.
+            #      Otherwise we could not reach the static (cluster) hosts.
+            # -p : Pushes this (static) route to all connecting clients.
+            #      Without it users could not reach the static vpn members (cluster devices).
+            # -c : Ensures that vpn clients can connect to each other.
+            # -d : Deactivates vpn default routes. I.e. Avoid piping the entire traffic via the VPN.
+            #      With this flag only vpn relevant traffic goes through the vpn tunnel.
+            #      This is also called split tunneling.
+            # -N : Configures NAT to access external server network.
+            # -u : Public server URL
+            command: |
+              ovpn_genconfig \
+                -s 10.66.70.0/24 \
+                -r 10.66.71.0/24 \
+                -p "route 10.66.71.0 255.255.255.0" \
+                -c \
+                -d \
+                -N \
+                -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
             volumes:
               - "{{ ovpn_data_volume_name }}:/etc/openvpn"
             auto_remove: true
 
+        # NOTE: Fixes issues between different OpenVPN versions.
         - name: Remove compression lines from OpenVPN config
           ansible.builtin.lineinfile:
             path: "{{ ovpn_data_volume_path }}/openvpn.conf"
             regexp: '^(comp-lzo no|push "comp-lzo no")$'
             state: absent
           become: true
-
 
     - name: Check if OpenVPN PKI CA exists
       ansible.builtin.stat:
@@ -43,7 +70,6 @@
     - name: Generate the PKI
       when: not ovpn_pki.stat.exists
       block:
-
         - name: Start OpenVPN container for PKI initiation
           community.docker.docker_container:
             name: ovpn_initpki
@@ -60,13 +86,11 @@
           ansible.builtin.expect:
             command: docker exec -i ovpn_initpki ovpn_initpki
             responses:
-              'Enter New CA Key Passphrase:': "ca_pwd_todo"
-              'Re-Enter New CA Key Passphrase:': "ca_pwd_todo"
+              "Enter New CA Key Passphrase:": "{{ vpn_ca_pwd }}"
+              "Re-Enter New CA Key Passphrase:": "{{ vpn_ca_pwd }}"
               'Common Name \(eg: your user, host, or server name\) \[Easy-RSA CA\]': "{{ common_name }}"
-              'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
+              "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ vpn_ca_pwd }}"
             timeout: 300
-          vars:
-            ca_passphrase: "1234todo"
           no_log: false
 
         - name: Remove the OpenVPN PKI init container
@@ -87,21 +111,3 @@
         capabilities:
           - NET_ADMIN
         recreate: "{{ update_vpn_config }}"
-
-# -----------------------
-
-    - name: Run OpenVPN client build in Docker
-      ansible.builtin.expect:
-        command: docker run -i -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full TESTALEX nopass
-        responses:
-          'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
-        timeout: 60
-      no_log: false
-
-    - name: Run OpenVPN client build in Docker
-      ansible.builtin.expect:
-        command: docker run -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient TESTALEX separated
-        responses:
-          'Enter pass phrase for /etc/openvpn/pki/private/ca.key': "ca_pwd_todo"
-        timeout: 60
-      no_log: false
