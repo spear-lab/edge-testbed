@@ -4,16 +4,16 @@
     archive_folder_path: "/tmp/vpn-client-credentials"
 
 - ansible.builtin.set_fact:
-    archive_path: "{{ archive_folder_path }}/{{ _rin__clientname }}.tar.gz"
+    archive_path: "{{ archive_folder_path }}/{{ _rin__client_name }}.tar.gz"
 
-- name: "Create client credentials folder for '{{ _rin__clientname }}'"
+- name: "Create client credentials folder for '{{ _rin__client_name }}'"
   ansible.builtin.expect:
     command: >
       docker run
       -v {{ _gv__vpn_data_volume_name }}:/etc/openvpn
       --rm {{ _gv__vpn_image }}
       ovpn_getclient
-      {{ _rin__clientname }}
+      {{ _rin__client_name }}
       separated
     responses:
       "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
@@ -26,9 +26,13 @@
     state: directory
     mode: '0755'
 
+#delme
+- debug: var=archive_folder_path
+- debug: var=archive_path
+
 - name: Create a compressed tarball of the new credentials folder
   community.general.archive:
-    path: "{{ _gv__vpn_data_volume_path }}clients/{{ _rin__clientname }}"
+    path: "{{ _gv__vpn_data_volume_path }}/clients/{{ _rin__client_name }}"
     dest: "{{ archive_path }}"
     format: gz
     mode: '0755'

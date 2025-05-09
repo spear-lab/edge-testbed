@@ -2,6 +2,6 @@
 argument_specs:
   main:
     options:
-      _rin__clientname:
+      _rin__client_name:
         type: str
         required: true

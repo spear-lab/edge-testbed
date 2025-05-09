@@ -1,13 +1,24 @@
 ---
+- name: Check that all required variables are set
+  hosts: localhost
+  roles:
+    - role: common/check-required-variables
+      _rin__required_variables:
+        - client_names
+
 - name: Add VPN clients
   hosts: cloud-server
-  vars:
-    usernames:
-      - malyuk_alexander
   tasks:
     - name: Run OpenVPN client build for each user
       ansible.builtin.include_role:
         name: cloud-server/vpn/add-client
       vars:
-        _rin__clientname: "{{ item }}"
-      loop: "{{ usernames }}"
+        _rin__client_name: "{{ item }}"
+      loop: "{{ client_names }}"
+
+    - name: Retrieve all new client certificates to localhost
+      ansible.builtin.include_role:
+        name: cloud-server/vpn/get-client-credentials
+      vars:
+        _rin__client_name: "{{ item }}"
+      loop: "{{ client_names }}"

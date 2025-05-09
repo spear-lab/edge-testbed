@@ -1,6 +1,12 @@
 ---
 
-- name: "Run OpenVPN client build in Docker for '{{ _rin__username }}'"
+- name: "Check if credentials for '{{ _rin__client_name }}' already exist"
+  ansible.builtin.stat:
+    path: "{{ _gv__vpn_data_volume_path }}/pki/issued/{{ _rin__client_name }}.crt"
+  register: client_crt
+
+- name: "Run OpenVPN client build in Docker for '{{ _rin__client_name }}'"
+  when: not client_crt.stat.exists
   ansible.builtin.expect:
     command: >
       docker run
@@ -8,9 +14,14 @@
       -v {{ _gv__vpn_data_volume_name }}:/etc/openvpn
       --rm {{ _gv__vpn_image }}
       easyrsa build-client-full
-      {{ _rin__username }}
+      {{ _rin__client_name }}
       nopass
     responses:
       "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
     timeout: 60
   no_log: false
+
+- name: "Inform that credentials already exist"
+  when: client_crt.stat.exists
+  ansible.builtin.debug:
+    msg: "The credentials for '{{ _rin__client_name }}' already exist"
