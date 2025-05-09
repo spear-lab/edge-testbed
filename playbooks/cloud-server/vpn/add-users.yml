@@ -7,7 +7,7 @@
         - client_names
         - copy_over_credentials_to_localhost
 
-- name: Add VPN clients
+- name: Add VPN users (dynamic IPs)
   hosts: cloud-server
   vars:
     copy_credentials_to_localhost: "{{ copy_over_credentials_to_localhost | bool }}"
@@ -19,7 +19,7 @@
         _rin__client_name: "{{ item }}"
       loop: "{{ client_names }}"
 
-    - name: Retrieve all new client certificates to localhost
+    - name: Retrieve all new client certificates
       ansible.builtin.include_role:
         name: cloud-server/vpn/get-client-credentials
       vars:

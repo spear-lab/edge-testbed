@@ -1,5 +1,7 @@
 ---
 
+# Intended to be run on an administrator's work machine, not AWX.
+
 # We use a single dockerized OpenVPN server for our VPN.
 # https://github.com/kylemanna/docker-openvpn/tree/master
 

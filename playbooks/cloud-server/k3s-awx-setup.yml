@@ -1,5 +1,7 @@
 ---
 
+# Intended to be run on an administrator's work machine, not AWX.
+
 - name: K3S AWX Setup
   hosts: cloud-server
   environment:
