@@ -6,14 +6,13 @@
 - name: VPN Setup
   hosts: cloud-server
   vars:
-    vpn_data_volume_path: "/var/lib/docker/volumes/{{ vpn_data_volume_name }}/_data/"
     common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
     update_vpn_config: false
 
   tasks:
     - name: Check if OpenVPN config exists
       ansible.builtin.stat:
-        path: "{{ vpn_data_volume_path }}/openvpn.conf"
+        path: "{{ _gv__vpn_data_volume_path }}/openvpn.conf"
       register: vpn_config
 
     - name: Generate the OpenVPN config
@@ -22,7 +21,7 @@
         - name: Generate OpenVPN config
           community.docker.docker_container:
             name: ovpn_genconfig
-            image: "{{ vpn_image }}"
+            image: "{{ _gv__vpn_image }}"
             # EXPLANATION:
             # -s : This is the dynamic (~DHCP) IP range for clients.
             #      The first IP will be used by the server.
@@ -40,28 +39,28 @@
             # -N : Configures NAT to access external server network.
             command: >
               ovpn_genconfig
-              -s {{ vpn_dynamic_base_ip }}/24
-              -r {{ vpn_static_base_ip }}/24
-              -p "route {{ vpn_static_base_ip }} 255.255.255.0"
+              -s {{ _gv__vpn_dynamic_base_ip }}/24
+              -r {{ _gv__vpn_static_base_ip }}/24
+              -p "route {{ _gv__vpn_static_base_ip }} 255.255.255.0"
               -c
               -d
               -N
-              -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
+              -u udp://{{ _gv__cloud_server_ip }}:{{ _gv__vpn_port }}
             volumes:
-              - "{{ vpn_data_volume_name }}:/etc/openvpn"
+              - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
             auto_remove: true
 
         # NOTE: Fixes issues between different OpenVPN versions.
         - name: Remove compression lines from OpenVPN config
           ansible.builtin.lineinfile:
-            path: "{{ vpn_data_volume_path }}/openvpn.conf"
+            path: "{{ _gv__vpn_data_volume_path }}/openvpn.conf"
             regexp: '^(comp-lzo no|push "comp-lzo no")$'
             state: absent
           become: true
 
     - name: Check if OpenVPN PKI CA exists
       ansible.builtin.stat:
-        path: "{{ vpn_data_volume_path }}/pki"
+        path: "{{ _gv__vpn_data_volume_path }}/pki"
       register: ovpn_pki
 
     - name: Generate the PKI
@@ -70,10 +69,10 @@
         - name: Start OpenVPN container for PKI initiation
           community.docker.docker_container:
             name: ovpn_initpki
-            image: "{{ vpn_image }}"
+            image: "{{ _gv__vpn_image }}"
             command: sleep infinity
             volumes:
-              - "{{ vpn_data_volume_name }}:/etc/openvpn"
+              - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
             env:
               EASYRSA_REQ_CN: "{{ common_name }}"
             auto_remove: false
@@ -83,10 +82,10 @@
           ansible.builtin.expect:
             command: docker exec -i ovpn_initpki ovpn_initpki
             responses:
-              "Enter New CA Key Passphrase:": "{{ vpn_ca_pwd }}"
-              "Re-Enter New CA Key Passphrase:": "{{ vpn_ca_pwd }}"
+              "Enter New CA Key Passphrase:": "{{ _gv__vpn_ca_pwd }}"
+              "Re-Enter New CA Key Passphrase:": "{{ _gv__vpn_ca_pwd }}"
               'Common Name \(eg: your user, host, or server name\) \[Easy-RSA CA\]': "{{ common_name }}"
-              "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ vpn_ca_pwd }}"
+              "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
             timeout: 300
           no_log: false
 
@@ -99,12 +98,12 @@
     - name: Run OpenVPN Server
       community.docker.docker_container:
         name: openvpn
-        image: "{{ vpn_image }}"
+        image: "{{ _gv__vpn_image }}"
         detach: true
         published_ports:
           - "1194:1194/udp"
         volumes:
-          - "{{ vpn_data_volume_name }}:/etc/openvpn"
+          - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
         capabilities:
           - NET_ADMIN
         recreate: "{{ update_vpn_config }}"

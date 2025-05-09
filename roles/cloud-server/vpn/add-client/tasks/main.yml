@@ -1,0 +1,16 @@
+---
+
+- name: "Run OpenVPN client build in Docker for '{{ _rin__username }}'"
+  ansible.builtin.expect:
+    command: >
+      docker run
+      -i
+      -v {{ _gv__vpn_data_volume_name }}:/etc/openvpn
+      --rm {{ _gv__vpn_image }}
+      easyrsa build-client-full
+      {{ _rin__username }}
+      nopass
+    responses:
+      "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
+    timeout: 60
+  no_log: false

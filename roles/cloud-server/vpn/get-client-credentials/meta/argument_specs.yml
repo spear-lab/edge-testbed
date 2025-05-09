@@ -1,0 +1,7 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__clientname:
+        type: str
+        required: true

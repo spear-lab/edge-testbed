@@ -1,0 +1,51 @@
+---
+
+- ansible.builtin.set_fact:
+    archive_folder_path: "/tmp/vpn-client-credentials"
+
+- ansible.builtin.set_fact:
+    archive_path: "{{ archive_folder_path }}/{{ _rin__clientname }}.tar.gz"
+
+- name: "Create client credentials folder for '{{ _rin__clientname }}'"
+  ansible.builtin.expect:
+    command: >
+      docker run
+      -v {{ _gv__vpn_data_volume_name }}:/etc/openvpn
+      --rm {{ _gv__vpn_image }}
+      ovpn_getclient
+      {{ _rin__clientname }}
+      separated
+    responses:
+      "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
+    timeout: 60
+  no_log: false
+
+- name: Ensure remote archive directory exists
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Create a compressed tarball of the new credentials folder
+  community.general.archive:
+    path: "{{ _gv__vpn_data_volume_path }}clients/{{ _rin__clientname }}"
+    dest: "{{ archive_path }}"
+    format: gz
+    mode: '0755'
+
+- name: Ensure local archive directory exists
+  delegate_to: localhost
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Fetch the tarball from the vpn server to the local runner host
+  ansible.builtin.fetch:
+    src: "{{ archive_path }}"
+    dest: "{{ archive_path }}"
+
+- name: Ensure remote archive directory is deleted
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: absent

@@ -11,8 +11,8 @@
     k3s_build_cluster: false
     k3s_server:
       write-kubeconfig-mode: "644"
-      bind-address: "{{ cloud_server_ip }}"
-      tls-san: "{{ cloud_server_ip }}"
+      bind-address: "{{ _gv__cloud_server_ip }}"
+      tls-san: "{{ _gv__cloud_server_ip }}"
       # disable:
       #   # IMPORTANT: If issues reaching AWX should occur - try removing this
       #   - traefik
