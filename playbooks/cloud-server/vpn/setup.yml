@@ -9,7 +9,8 @@
   hosts: cloud-server
   vars:
     common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
-    update_vpn_config: false
+    force_vpn_config_update: false
 
   roles:
-    - cloud-server/vpn/setup
+    - role: cloud-server/vpn/setup
+      _rin__force_vpn_config_update: "{{ force_vpn_config_update | bool }}"

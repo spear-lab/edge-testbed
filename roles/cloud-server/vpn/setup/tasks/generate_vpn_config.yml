@@ -21,8 +21,6 @@
     command: >
       ovpn_genconfig
       -s {{ _gv__vpn_dynamic_base_ip }}/24
-      -r {{ _gv__vpn_static_base_ip }}/24
-      -p "route {{ _gv__vpn_static_base_ip }} 255.255.255.0"
       -c
       -d
       -N
@@ -38,3 +36,14 @@
     regexp: '^(comp-lzo no|push "comp-lzo no")$'
     state: absent
   become: true
+
+- name: Ensure custom configurations are present
+  ansible.builtin.lineinfile:
+    path: "{{ _gv__vpn_data_volume_path }}/openvpn.conf"
+    line: "{{ item }}"
+    state: present
+  loop:
+    - duplicate-cn
+    - keepalive 10 30
+    - route 10.66.71.0 255.255.255.0
+    - push "route 10.66.71.0 255.255.255.0"

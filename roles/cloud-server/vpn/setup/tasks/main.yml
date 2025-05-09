@@ -6,7 +6,7 @@
   register: vpn_config
 
 - name: Generate the OpenVPN config
-  when: not vpn_config.stat.exists or (update_vpn_config | bool)
+  when: not vpn_config.stat.exists or _rin__force_vpn_config_update
   ansible.builtin.include_tasks: generate_vpn_config.yml
 
 - name: Check if OpenVPN PKI CA exists
@@ -29,9 +29,5 @@
       - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
     capabilities:
       - NET_ADMIN
-    recreate: "{{ update_vpn_config | bool }}"
+    recreate: "{{ _rin__force_vpn_config_update }}"
     restart_policy: unless-stopped
-    # experimental by me
-    # devices:
-    #   - /dev/net/tun
-    # network_mode: host
