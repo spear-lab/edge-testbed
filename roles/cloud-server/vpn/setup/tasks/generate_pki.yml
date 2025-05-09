@@ -1,0 +1,29 @@
+---
+- name: Start OpenVPN container for PKI initiation
+  community.docker.docker_container:
+    name: ovpn_initpki
+    image: "{{ _gv__vpn_image }}"
+    command: sleep infinity
+    volumes:
+      - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
+    env:
+      EASYRSA_REQ_CN: "{{ common_name }}"
+    auto_remove: false
+    state: started
+
+- name: Run ovpn_initpki with expect for passphrase prompts
+  ansible.builtin.expect:
+    command: docker exec -i ovpn_initpki ovpn_initpki
+    responses:
+      "Enter New CA Key Passphrase:": "{{ _gv__vpn_ca_pwd }}"
+      "Re-Enter New CA Key Passphrase:": "{{ _gv__vpn_ca_pwd }}"
+      'Common Name \(eg: your user, host, or server name\) \[Easy-RSA CA\]': "{{ common_name }}"
+      "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
+    timeout: 300
+  no_log: false
+
+- name: Remove the OpenVPN PKI init container
+  community.docker.docker_container:
+    name: ovpn_initpki
+    state: absent
+    force_kill: true

@@ -1,0 +1,37 @@
+---
+
+- name: Check if OpenVPN config exists
+  ansible.builtin.stat:
+    path: "{{ _gv__vpn_data_volume_path }}/openvpn.conf"
+  register: vpn_config
+
+- name: Generate the OpenVPN config
+  when: not vpn_config.stat.exists or (update_vpn_config | bool)
+  ansible.builtin.include_tasks: generate_vpn_config.yml
+
+- name: Check if OpenVPN PKI CA exists
+  ansible.builtin.stat:
+    path: "{{ _gv__vpn_data_volume_path }}/pki"
+  register: ovpn_pki
+
+- name: Generate the PKI
+  when: not ovpn_pki.stat.exists
+  ansible.builtin.include_tasks: generate_pki.yml
+
+- name: Run OpenVPN Server
+  community.docker.docker_container:
+    name: openvpn
+    image: "{{ _gv__vpn_image }}"
+    detach: true
+    published_ports:
+      - "1194:1194/udp"
+    volumes:
+      - "{{ _gv__vpn_data_volume_name }}:/etc/openvpn"
+    capabilities:
+      - NET_ADMIN
+    recreate: "{{ update_vpn_config | bool }}"
+    restart_policy: unless-stopped
+    # experimental by me
+    # devices:
+    #   - /dev/net/tun
+    # network_mode: host

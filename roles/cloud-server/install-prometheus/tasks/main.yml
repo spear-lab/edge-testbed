@@ -5,11 +5,6 @@
     repo_name: prometheus-community
     repo_url: https://prometheus-community.github.io/helm-charts
 
-# - name: Update Helm repositories
-#   ansible.builtin.command: helm repo update
-#   changed_when: "'Update Complete.' in repo_update.stdout"
-#   register: repo_update
-
 - name: Create 'prometheus' namespace
   kubernetes.core.k8s:
     api_version: v1

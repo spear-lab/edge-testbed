@@ -8,13 +8,14 @@
     # NOTE: K3S has a unique location for its kubectl file.
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   vars:
+    # k3s_state: uninstalled
     k3s_release_version: v1.29.6+k3s2
     k3s_become: true
     k3s_build_cluster: false
     k3s_server:
       write-kubeconfig-mode: "644"
-      bind-address: "{{ _gv__cloud_server_ip }}"
-      tls-san: "{{ _gv__cloud_server_ip }}"
+      bind-address: "{{ _gv__cloud_server_public_ip }}"
+      # tls-san: "{{ _gv__cloud_server_vpn_ip }}"
       # disable:
       #   # IMPORTANT: If issues reaching AWX should occur - try removing this
       #   - traefik
@@ -28,6 +29,6 @@
 
   roles:
     - role: third-party/xanmanning.k3s
-    - role: third-party/gantsign.helm
-    - role: cloud-server/install-prometheus
-    - role: cloud-server/setup-awx-operator
+    # - role: third-party/gantsign.helm
+    # - role: cloud-server/install-prometheus
+    # - role: cloud-server/setup-awx-operator

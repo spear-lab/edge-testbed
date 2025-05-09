@@ -7,8 +7,10 @@ metadata:
 spec:
   # One of the pieces to allow to reach the AWX FE/GUI from outside.
   service_type: LoadBalancer
-  loadbalancer_protocol: https
-  loadbalancer_port: 443
+  # loadbalancer_protocol: https
+  loadbalancer_protocol: http
+  # loadbalancer_port: 443
+  loadbalancer_port: 80
   nodeport_port: 30080
   ingress_type: none
   # Fixing the postgres bug and fixing its image version.
