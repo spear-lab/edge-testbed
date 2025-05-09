@@ -27,10 +27,10 @@
             image: "{{ vpn_image }}"
             # EXPLANATION:
             # -s : This is the dynamic (~DHCP) IP range for clients.
-            #      The first IP will be used by the server -> 10.66.70.1
+            #      The first IP will be used by the server.
             #      The rest will be used by people connecting to our VPN.
             # We use dynamic and static IPs.
-            # These are split into x.y.70.z/24 and x.y.71.z/24 to avoid collisions.
+            # These are split into two disjunct subnets to avoid collisions.
             # -r : Adds a route to the vpn server and tells it to also handle the static hosts.
             #      Otherwise we could not reach the static (cluster) hosts.
             # -p : Pushes this (static) route to all connecting clients.
@@ -43,9 +43,9 @@
             # -u : Public server URL
             command: |
               ovpn_genconfig \
-                -s 10.66.70.0/24 \
-                -r 10.66.71.0/24 \
-                -p "route 10.66.71.0 255.255.255.0" \
+                -s {{ vpn_dynamic_base_ip }}/24 \
+                -r {{ vpn_static_base_ip }}/24 \
+                -p "route {{ vpn_static_base_ip }} 255.255.255.0" \
                 -c \
                 -d \
                 -N \
