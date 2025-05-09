@@ -40,16 +40,15 @@
             #      With this flag only vpn relevant traffic goes through the vpn tunnel.
             #      This is also called split tunneling.
             # -N : Configures NAT to access external server network.
-            # -u : Public server URL
-            command: |
-              ovpn_genconfig \
-                -s {{ vpn_dynamic_base_ip }}/24 \
-                -r {{ vpn_static_base_ip }}/24 \
-                -p "route {{ vpn_static_base_ip }} 255.255.255.0" \
-                -c \
-                -d \
-                -N \
-                -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
+            command: >
+              ovpn_genconfig
+              -s {{ vpn_dynamic_base_ip }}/24
+              -r {{ vpn_static_base_ip }}/24
+              -p "route {{ vpn_static_base_ip }} 255.255.255.0"
+              -c
+              -d
+              -N
+              -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
             volumes:
               - "{{ ovpn_data_volume_name }}:/etc/openvpn"
             auto_remove: true
