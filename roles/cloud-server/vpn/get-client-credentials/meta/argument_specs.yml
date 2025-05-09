@@ -5,3 +5,7 @@ argument_specs:
       _rin__client_name:
         type: str
         required: true
+      _rin__copy_to_localhost:
+        description: "Copies the credentials over to the /tmp folder of the ansible runner/localhost"
+        type: bool
+        required: true

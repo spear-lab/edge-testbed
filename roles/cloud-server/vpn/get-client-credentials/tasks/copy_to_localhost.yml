@@ -1,0 +1,44 @@
+---
+- name: Ensure remote archive directory exists
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Create a compressed tarball of the new credentials folder
+  community.general.archive:
+    path: "{{ _gv__vpn_data_volume_path }}/clients/{{ _rin__client_name }}"
+    dest: "{{ archive_path }}"
+    format: gz
+    mode: "0755"
+
+- name: Ensure local archive directory exists
+  delegate_to: localhost
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Fetch the tarball from the vpn server to the local runner host
+  ansible.builtin.fetch:
+    src: "{{ archive_path }}"
+    dest: "{{ archive_path }}"
+    flat: true
+
+- name: Ensure remote archive directory is deleted
+  ansible.builtin.file:
+    path: "{{ archive_folder_path }}"
+    state: absent
+
+- name: Extract the fetched tarball on the local runner host
+  delegate_to: localhost
+  ansible.builtin.unarchive:
+    src: "{{ archive_path }}"
+    dest: "{{ archive_folder_path }}"
+    remote_src: false
+
+- name: Remove the local tarball after extraction
+  delegate_to: localhost
+  ansible.builtin.file:
+    path: "{{ archive_path }}"
+    state: absent

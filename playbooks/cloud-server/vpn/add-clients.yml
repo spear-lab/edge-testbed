@@ -5,9 +5,12 @@
     - role: common/check-required-variables
       _rin__required_variables:
         - client_names
+        - copy_over_credentials_to_localhost
 
 - name: Add VPN clients
   hosts: cloud-server
+  vars:
+    copy_credentials_to_localhost: "{{ copy_over_credentials_to_localhost | bool }}"
   tasks:
     - name: Run OpenVPN client build for each user
       ansible.builtin.include_role:
@@ -21,4 +24,5 @@
         name: cloud-server/vpn/get-client-credentials
       vars:
         _rin__client_name: "{{ item }}"
+        _rin__copy_to_localhost: "{{ copy_credentials_to_localhost }}"
       loop: "{{ client_names }}"
