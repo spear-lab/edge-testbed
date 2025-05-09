@@ -1,7 +1,19 @@
 ---
+
+- name: Add VPN clients
+  hosts: cloud-server
+  vars:
+
 - name: Run OpenVPN client build in Docker
   ansible.builtin.expect:
-    command: docker run -i -v {{ ovpn_data_volume_name }}:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full TESTALEX nopass
+    command: >
+      docker run
+      -i
+      -v {{ vpn_data_volume_name }}:/etc/openvpn
+      --rm {{ vpn_image }}
+      easyrsa build-client-full
+      TESTALEX
+      nopass
     responses:
       "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ vpn_ca_pwd }}"
     timeout: 60

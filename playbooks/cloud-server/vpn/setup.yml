@@ -6,20 +6,18 @@
 - name: VPN Setup
   hosts: cloud-server
   vars:
-    vpn_image: kylemanna/openvpn
-    ovpn_data_volume_name: ovpn-data-spear
-    ovpn_data_volume_path: /var/lib/docker/volumes/ovpn-data-spear/_data/
+    vpn_data_volume_path: "/var/lib/docker/volumes/{{ vpn_data_volume_name }}/_data/"
     common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
     update_vpn_config: false
 
   tasks:
     - name: Check if OpenVPN config exists
       ansible.builtin.stat:
-        path: "{{ ovpn_data_volume_path }}/openvpn.conf"
-      register: ovpn_config
+        path: "{{ vpn_data_volume_path }}/openvpn.conf"
+      register: vpn_config
 
     - name: Generate the OpenVPN config
-      when: not ovpn_config.stat.exists or update_vpn_config
+      when: not vpn_config.stat.exists or update_vpn_config
       block:
         - name: Generate OpenVPN config
           community.docker.docker_container:
@@ -50,20 +48,20 @@
               -N
               -u udp://{{ cloud_server_ip }}:{{ vpn_port }}
             volumes:
-              - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+              - "{{ vpn_data_volume_name }}:/etc/openvpn"
             auto_remove: true
 
         # NOTE: Fixes issues between different OpenVPN versions.
         - name: Remove compression lines from OpenVPN config
           ansible.builtin.lineinfile:
-            path: "{{ ovpn_data_volume_path }}/openvpn.conf"
+            path: "{{ vpn_data_volume_path }}/openvpn.conf"
             regexp: '^(comp-lzo no|push "comp-lzo no")$'
             state: absent
           become: true
 
     - name: Check if OpenVPN PKI CA exists
       ansible.builtin.stat:
-        path: "{{ ovpn_data_volume_path }}/pki"
+        path: "{{ vpn_data_volume_path }}/pki"
       register: ovpn_pki
 
     - name: Generate the PKI
@@ -75,7 +73,7 @@
             image: "{{ vpn_image }}"
             command: sleep infinity
             volumes:
-              - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+              - "{{ vpn_data_volume_name }}:/etc/openvpn"
             env:
               EASYRSA_REQ_CN: "{{ common_name }}"
             auto_remove: false
@@ -101,12 +99,12 @@
     - name: Run OpenVPN Server
       community.docker.docker_container:
         name: openvpn
-        image: kylemanna/openvpn
+        image: "{{ vpn_image }}"
         detach: true
         published_ports:
           - "1194:1194/udp"
         volumes:
-          - "{{ ovpn_data_volume_name }}:/etc/openvpn"
+          - "{{ vpn_data_volume_name }}:/etc/openvpn"
         capabilities:
           - NET_ADMIN
         recreate: "{{ update_vpn_config }}"
