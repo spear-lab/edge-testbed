@@ -5,3 +5,7 @@ argument_specs:
       _rin__client_name:
         type: str
         required: true
+      _rin__static_ip:
+        description: "Will create a new entry in the CCD for static IP mapping"
+        type: str
+        required: false

@@ -1,3 +1,4 @@
+---
 # The VPN Server is running in an isolated docker container which makes connecting to it difficult.
 # Our goal is to also use the VPN as a secure connection to services hosted on the cloud server (e.g. AWX).
 # For this to work smoothly the easiest solution is to spin up a VPN client on the cloud server.
@@ -9,7 +10,69 @@
       - openvpn
     state: latest
     update_cache: true
-# generate certificate for cloud server as vpn client - use role
-# generate  ccd entry for static IP mapping
 
+- name: "Generate credentials for '{{ cloud_server_common_name }}' with static IP '{{ _gv__cloud_server_vpn_client_ip }}'"
+  ansible.builtin.include_role:
+    name: cloud-server/vpn/add-client
+  vars:
+    _rin__client_name: "{{ cloud_server_common_name }}"
+    _rin__static_ip: "{{ _gv__cloud_server_vpn_client_ip }}"
+
+- name: Aggregate credentials
+  ansible.builtin.include_role:
+    name: cloud-server/vpn/get-client-credentials
+  vars:
+    _rin__client_name: "{{ cloud_server_common_name }}"
+    _rin__copy_to_localhost: "{{ copy_credentials_to_localhost }}"
+
+- name: Copy all credentials to the correct OpenVPN folder
+  ansible.builtin.copy:
+    src: "{{ _gv__vpn_data_volume_path }}/clients/{{ cloud_server_common_name }}/"
+    dest: /etc/openvpn/client/
+    remote_src: true
 # ensure that vpn client connection stays alive (after error or reboot)
+
+- name: Rename .ovpn to .conf
+  copy:
+    src: "/etc/openvpn/client/{{ cloud_server_common_name }}.ovpn"
+    dest: "/etc/openvpn/client/{{ cloud_server_common_name }}.conf"
+    remote_src: true
+
+- name: Ensure AUTOSTART is set to "all"
+  lineinfile:
+    path: /etc/default/openvpn
+    regexp: "^#?AUTOSTART="
+    line: 'AUTOSTART="all"'
+
+- name: Enable OpenVPN client service at boot
+  ansible.builtin.systemd:
+    name: "{{ vpn_client_service }}"
+    enabled: true
+
+- name: Start OpenVPN client service
+  ansible.builtin.systemd:
+    name: "{{ vpn_client_service }}"
+    state: started
+
+- name: Ensure OpenVPN client systemd override directory exists
+  file:
+    path: "/etc/systemd/system/{{ openvpn_service }}.service.d"
+    state: directory
+    mode: "0755"
+
+- name: Add systemd override for automatic restart on failure
+  copy:
+    dest: "/etc/systemd/system/{{ openvpn_service }}.service.d/override.conf"
+    content: |
+      [Service]
+      Restart=on-failure
+      RestartSec=5
+
+- name: Reload systemd daemon to apply changes
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart OpenVPN client service to apply systemd override
+  ansible.builtin.systemd:
+    name: "{{ openvpn_service }}"
+    state: restarted

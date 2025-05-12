@@ -10,6 +10,8 @@
   vars:
     common_name: "SPEAR-EDGE-TESTBED-VPN-Server"
     force_vpn_config_update: false
+    cloud_server_common_name: cloud_server
+    vpn_client_service: "openvpn-client@cloud_server"
 
   roles:
     - role: cloud-server/vpn/setup

@@ -20,5 +20,12 @@
     timeout: 60
   no_log: false
 
+- name: Ensure keepalive is present in client config
+  lineinfile:
+    path: "{{ _gv__vpn_data_volume_path }}/clients/{{ _rin__client_name }}/{{ _rin__client_name }}.ovpn"
+    regexp: '^keepalive '
+    line: "keepalive 10 60"
+    insertafter: EOF
+
 - ansible.builtin.include_tasks: copy_to_localhost.yml
   when: _rin__copy_to_localhost

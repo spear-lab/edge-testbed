@@ -25,3 +25,13 @@
   when: client_crt.stat.exists
   ansible.builtin.debug:
     msg: "The credentials for '{{ _rin__client_name }}' already exist"
+
+- name: Ensure CCD file exists with correct content for static IP
+  when: _rin__static_ip
+  become: true
+  ansible.builtin.copy:
+    dest: "{{ _gv__vpn_data_volume_path }}/ccd/{{ _rin__client_name }}"
+    content: "ifconfig-push {{ _rin__static_ip }} 255.255.255.0"
+    owner: root
+    group: root
+    mode: '0644'
