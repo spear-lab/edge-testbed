@@ -1,6 +1,7 @@
 _gv__cloud_server_public_ip: 37.27.29.137
 
-_gv__cloud_server_vpn_ip: 10.66.70.1
+_gv__vpn_server_ip: 10.66.71.254
+_gv__cloud_server_vpn_client_ip: 10.66.71.254
 _gv__vpn_image: kylemanna/openvpn
 _gv__vpn_data_volume_name: ovpn-data-spear
 _gv__vpn_data_volume_path: /var/lib/docker/volumes/ovpn-data-spear/_data

@@ -31,3 +31,5 @@
       - NET_ADMIN
     recreate: "{{ _rin__force_vpn_config_update }}"
     restart_policy: unless-stopped
+
+- ansible.builtin.include_tasks: vpn_cloud_server_client.yml

@@ -1,0 +1,15 @@
+# The VPN Server is running in an isolated docker container which makes connecting to it difficult.
+# Our goal is to also use the VPN as a secure connection to services hosted on the cloud server (e.g. AWX).
+# For this to work smoothly the easiest solution is to spin up a VPN client on the cloud server.
+
+- name: Install OpenVPN on the cloud server host
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - openvpn
+    state: latest
+    update_cache: true
+# generate certificate for cloud server as vpn client - use role
+# generate  ccd entry for static IP mapping
+
+# ensure that vpn client connection stays alive (after error or reboot)
