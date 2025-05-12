@@ -1,11 +1,14 @@
 import ansible_runner
 import typer
-
+from sli.utils.styling import create_spinner_context_manager
 import sli.cluster.projects
 from sli.configuration.security.main import get_vault_pwd_file_path
 from sli.utils.auxiliary import find_repo_root, get_current_branch_name
 from sli.utils.logging import logger
 from sli.utils.typer_augmentations import AliasGroup
+from icecream import ic
+import json
+from sli.utils.consts import ANSIBLE_FACT_CACHE_PATH
 
 app = typer.Typer(cls=AliasGroup)
 
@@ -18,10 +21,23 @@ app.add_typer(
 
 @app.command("show-link, l", help="Prints the link to the AWX cluster")
 def show_link() -> None:
-    logger.info("")
-    url = "https://TODO/"
-    logger.info(url)
+    repo_root_path = find_repo_root()
+    playbook_path = repo_root_path / "playbooks" / "awx" / "get_url.yml"
+    spinner_context = create_spinner_context_manager(message="Fetching port information from AWX cluster")
+    with spinner_context:
+        result = ansible_runner.run(
+            playbook=str(playbook_path),
+            private_data_dir=str(repo_root_path),
+            quiet=True,
+        )
+    if result.rc == 0:
+        target_host = [k for k in result.stats.get('ok') if k != 'localhost'][0]
 
+        facts = result.get_fact_cache(target_host)
+        url = facts.get("awx_cluster_vpn_url")
+        logger.info("The AWX Cluster URL (VPN Tunneled): \n" + url)
+    else:
+        logger.error(result.stderr)
 
 @app.command("apply-configuration, ac", help="Run the cluster configuration playbook")
 def apply_configuration(

@@ -20,8 +20,13 @@
       namespace: awx
     register: svc_info
 
-  - name: Show AWX URL
-    debug:
-      msg: "http://{{ _gv__cloud_server_vpn_client_ip }}:{{ item.nodePort }}"
+  - name: Store IP in fact cache for later retrieval via Python
+    ansible.builtin.set_fact:
+      awx_cluster_vpn_url: "http://{{ _gv__cloud_server_vpn_client_ip }}:{{ item.nodePort }}"
+      cacheable: yes
     loop: "{{ svc_info.resources[0].spec.ports }}"
     when: item.nodePort is defined
+
+  - name: Print AWX VPN URL
+    ansible.builtin.debug:
+      var: awx_cluster_vpn_url

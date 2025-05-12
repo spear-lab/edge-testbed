@@ -23,6 +23,7 @@ dependencies = [
     "ansible-runner~=2.4.0",
     "GitPython~=3.1.43",
     "awxkit~=24.6.1",
+    "icecream~=2.1.4",
 ]
 
 [project.scripts]

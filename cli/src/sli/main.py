@@ -23,11 +23,6 @@ def show_version():
 
 
 app.add_typer(
-    typer_instance=sli.configuration.main.app,
-    name="configuration, conf",
-    help="Commands to manage and configure the SPEAR Edge-Testbed CLI",
-)
-app.add_typer(
     typer_instance=sli.cluster.main.app,
     name="cluster, c",
     help="Commands to interact with an AWX cluster",
