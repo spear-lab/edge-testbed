@@ -17,14 +17,20 @@ else ifneq ($(UBUNTU_VERSION),)
 endif
 
 .PHONY: install-cli
-develop-cli:
+install-cli:
 	$(PIP) install -e ./cli/ $(use_break_system_packages)
 
 .PHONY: uninstall-cli
 uninstall-cli:
 	$(PIP) uninstall --yes $(use_break_system_packages) itm-cli 
 
+
 .PHONY: install-ansible-requirements 
 install-ansible-requirements:
 	ansible-galaxy collection install -r roles/requirements.yml ; \
 	ansible-galaxy role install -r roles/requirements.yml -p roles/third-party
+
+.PHONY: activate-vault-secret
+activate-vault-secret:
+# To make this command work create a file ".vault_pwd" and paste the vault pwd into it.
+	export ANSIBLE_VAULT_PASSWORD_FILE=/root/edge-testbed/.vault_pwd

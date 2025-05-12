@@ -1,7 +1,7 @@
-from itm_cli.configuration.common import check_and_handle_config_file
-from itm_cli.configuration.consts import ITM_CLI_USER_FOLDER_PATH
+from sli.configuration.common import check_and_handle_config_file
+from sli.configuration.consts import SLI_USER_FOLDER_PATH
 
-_INIT_FILE_PATH = ITM_CLI_USER_FOLDER_PATH / ".init_flag"
+_INIT_FILE_PATH = SLI_USER_FOLDER_PATH / ".init_flag"
 
 
 def handle_init_use() -> None:

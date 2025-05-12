@@ -8,7 +8,7 @@ def get_current_branch_name() -> str:
     return repo.active_branch.name
 
 
-def find_it_management_root(
+def find_repo_root(
     path: pathlib.Path = pathlib.Path(__file__).resolve(),
 ) -> pathlib.Path:
     git_root = path / ".git"
@@ -16,5 +16,5 @@ def find_it_management_root(
         return path
     parent = path.parent
     if parent == path:
-        raise FileNotFoundError("The IT-management repository root was not found.")
-    return find_it_management_root(parent)
+        raise FileNotFoundError("The edge-testbed repository root was not found.")
+    return find_repo_root(parent)

@@ -3,7 +3,7 @@ import pathlib
 
 import rich
 
-from itm_cli.utils.logging import logger
+from sli.utils.logging import logger
 
 
 def clear_file(file: pathlib.Path) -> None:

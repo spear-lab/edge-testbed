@@ -6,9 +6,9 @@ class ConfigKey:
 
 
 class InternalConfigKey(ConfigKey, enum.Enum):
-    """Interal Config Keys are not configurable by the user of the CLI."""
+    """Internal Config Keys are not configurable by the user of the CLI."""
 
-    CONFIG_MAIN_KEY = "ITM_CLI"
+    CONFIG_MAIN_KEY = "SLI"
     CONFIG_VERSION = "config_version"
 
 

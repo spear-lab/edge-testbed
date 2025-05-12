@@ -5,11 +5,11 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "itm-cli"
-description = "Cartken IT-Management CLI"
+name = "spear-edge-testbed-cli"
+description = "SPEAR Edge-Testbed CLI"
 readme = "README.md"
 authors = [
-    {name = "Alexander Malyuk", email = "alexander.malyuk@cartken.com"},
+    {name = "Alexander Malyuk", email = "malyuk.alexander1999@gmail.com"},
 ]
 requires-python = ">= 3.10"
 dynamic = [
@@ -26,10 +26,10 @@ dependencies = [
 ]
 
 [project.scripts]
-itm = "itm_cli.main:main"
+itm = "sli.main:main"
 
 [tool.setuptools.dynamic]
-version = {attr = "itm_cli.__version__"}
+version = {attr = "sli.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

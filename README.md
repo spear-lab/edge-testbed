@@ -42,8 +42,6 @@ The only working solution seems to be the following:
 
 # TODO DELME
 
-export ANSIBLE_VAULT_PASSWORD_FILE=/root/edge-testbed/.vault_pwd
-
 ansible-playbook playbooks/cloud-server/vpn/setup.yml --become --become-password-file=.become_pwds/cloud_server_spear --vault-password-file .vault_pwd
 
 ansible-playbook playbooks/cloud-server/vpn/add-users.yml --become --become-password-file=.become_pwds/cloud_s

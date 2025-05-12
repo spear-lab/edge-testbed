@@ -2,9 +2,9 @@ import pathlib
 
 import typer
 
-from itm_cli.configuration.consts import ITM_CLI_USER_FOLDER_PATH
+from sli.configuration.consts import SLI_USER_FOLDER_PATH
 
-VAULT_PWD_FILE = ITM_CLI_USER_FOLDER_PATH / ".vault_pwd"
+VAULT_PWD_FILE = SLI_USER_FOLDER_PATH / ".vault_pwd"
 
 
 def get_vault_pwd_file_path() -> pathlib.Path:
