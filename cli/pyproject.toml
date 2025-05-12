@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-itm = "sli.main:main"
+sli = "sli.main:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "sli.__version__"}

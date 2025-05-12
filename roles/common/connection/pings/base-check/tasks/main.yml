@@ -1,0 +1,13 @@
+---
+
+- name: Ping the target IP from localhost
+  ansible.builtin.shell: "ping -c 1 -w 2 {{ _rin__target_ip }}"
+  register: ping_result
+  ignore_errors: true
+  changed_when: false
+
+- name: Fail with a message
+  when: ping_result.rc != 0
+  ansible.builtin.fail:
+    msg: "{{ ('Unable to ping' if _rin__error_msg is not defined else _rin__error_msg) ~ ' ' ~ _rin__target_ip }}"
+

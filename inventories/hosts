@@ -6,8 +6,9 @@ ansible_connection=ssh
 
 [cloud-server]
 37.27.29.137
-# localhost
-# 10.66.71.254
+
+[cloud-server-vpn-client]
+10.66.71.254
 
 [master-nuc]
 10.66.71.253

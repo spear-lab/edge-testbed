@@ -1,5 +1,5 @@
 from importlib.metadata import version
-
+import sys
 import rich
 import rich.traceback
 import typer
@@ -36,8 +36,10 @@ app.add_typer(
 
 def main():
     handle_init_use()
-    app()
-
+    if len(sys.argv) == 1:
+        app(["--help"])
+    else:
+        app()
 
 if __name__ == "__main__":
     main()

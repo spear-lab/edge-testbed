@@ -1,0 +1,6 @@
+---
+- name: Check if localhost can ping a given IP
+  hosts: localhost
+  gather_facts: false
+  vars:
+    target_ip: "{{ target_ip | default('8.8.8.8') }}"

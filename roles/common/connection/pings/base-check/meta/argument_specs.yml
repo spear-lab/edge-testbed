@@ -1,0 +1,10 @@
+---
+argument_specs:
+  main:
+    options:
+      _rin__target_ip:
+        type: str
+        required: true
+      _rin__error_msg:
+        type: str
+        required: false

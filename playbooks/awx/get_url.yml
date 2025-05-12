@@ -1,0 +1,27 @@
+
+---
+- name: Check if VPN cloud client is reachable
+  hosts: localhost
+  roles:
+    - role: common/connection/pings/cloud-server-vpn-client-check
+
+- name: Get AWX URL
+  hosts: cloud-server
+  environment:
+    # NOTE: K3S has a unique location for its kubectl file.
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+  - name: Get details of the LoadBalancer service spear-awx-service
+    kubernetes.core.k8s_info:
+      api_version: v1
+      kind: Service
+      name: spear-awx-service
+      namespace: awx
+    register: svc_info
+
+  - name: Show AWX URL
+    debug:
+      msg: "http://{{ _gv__cloud_server_vpn_client_ip }}:{{ item.nodePort }}"
+    loop: "{{ svc_info.resources[0].spec.ports }}"
+    when: item.nodePort is defined

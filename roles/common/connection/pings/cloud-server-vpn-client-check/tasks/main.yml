@@ -1,0 +1,6 @@
+---
+- ansible.builtin.include_role:
+    name: common/connection/pings/base-check
+  vars:
+    _rin__target_ip: "{{ _gv__cloud_server_vpn_client_ip }}"
+    _rin__error_msg: "Cannot reach the Cloud Server VPN Client"

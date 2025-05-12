@@ -22,7 +22,7 @@ install-cli:
 
 .PHONY: uninstall-cli
 uninstall-cli:
-	$(PIP) uninstall --yes $(use_break_system_packages) itm-cli 
+	$(PIP) uninstall --yes $(use_break_system_packages) sli 
 
 
 .PHONY: install-ansible-requirements 

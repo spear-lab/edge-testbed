@@ -18,6 +18,7 @@ app.add_typer(
 
 @app.command("show-link, l", help="Prints the link to the AWX cluster")
 def show_link() -> None:
+    logger.info("")
     url = "https://TODO/"
     logger.info(url)
 
