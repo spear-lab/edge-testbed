@@ -17,3 +17,30 @@ spec:
   postgres_image: quay.io/sclorg/postgresql-15-c9s
   postgres_image_version: "20240731"
   postgres_data_volume_init: true
+
+postgres_init_container_commands: |
+  chown 26:0 /var/lib/pgsql/data
+  chmod 700 /var/lib/pgsql/data
+
+# Making extra-sure that the used versions are fixed.
+image: quay.io/ansible/awx
+image_version: "24.6.1"
+ee_images:
+  - name: quay.io/ansible/awx-ee
+    image: quay.io/ansible/awx-ee:24.6.1
+control_plane_ee_image: quay.io/ansible/awx-ee:24.6.1
+init_container_image: quay.io/ansible/awx-ee
+init_container_image_version: "24.6.1"
+
+# Adjusting the resource requirements to allow proper workloads & autoscaling.
+# task_resource_requirements:
+#   limits:
+#     cpu: 500m
+#     memory: 3Gi
+#   requests:
+#     cpu: 250m
+#     memory: 2500M
+web_resource_requirements:
+  requests:
+    cpu: 100m
+    memory: 1250M
