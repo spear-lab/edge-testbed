@@ -21,7 +21,8 @@ def show_config():
 
 
 @app.command(
-    "reset-config", help="Reset the current SPEAR Edge-Testbed CLI configuration to its initial state"
+    "reset-config",
+    help="Reset the current SPEAR Edge-Testbed CLI configuration to its initial state",
 )
 def reset_config():
     clear_file(SLI_CONFIG_PATH)

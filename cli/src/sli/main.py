@@ -15,7 +15,9 @@ console = rich.console.Console()
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, cls=AliasGroup)
 
 
-@app.command("version, v", help="Show the version of the currently installed SPEAR Edge-Testbed CLI")
+@app.command(
+    "version, v", help="Show the version of the currently installed SPEAR Edge-Testbed CLI"
+)
 def show_version():
     logger.info(f"SPEAR Edge-Testbed CLI version: '{version('sli')}'")
 

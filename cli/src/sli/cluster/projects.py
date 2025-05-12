@@ -29,10 +29,6 @@ def synchronize_project(
         cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
     )
     if result.rc == 0:
-        logger.info(
-            f"The AWX project and branch '{branch}' are now successfully synchronized."
-        )
+        logger.info(f"The AWX project and branch '{branch}' are now successfully synchronized.")
     else:
-        logger.error(
-            f"The synchronization of the AWX project with branch '{branch}' failed."
-        )
+        logger.error(f"The synchronization of the AWX project with branch '{branch}' failed.")

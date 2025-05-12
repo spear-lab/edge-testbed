@@ -58,13 +58,9 @@ def apply_configuration(
         cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
     )
     if result.rc == 0:
-        logger.info(
-            f"The AWX instance was successfully configured using the '{branch}' branch."
-        )
+        logger.info(f"The AWX instance was successfully configured using the '{branch}' branch.")
     else:
-        logger.error(
-            f"The AWX instance configuration failed using the '{branch}' branch."
-        )
+        logger.error(f"The AWX instance configuration failed using the '{branch}' branch.")
 
 
 @app.command(
@@ -76,7 +72,7 @@ def reset_configuration(
 ) -> None:
     if not skip_confirmation:
         if not typer.confirm(
-            f"Are you certain that you want to RESET the configuration of the cluster?"
+            "Are you certain that you want to RESET the configuration of the cluster?"
         ):
             raise typer.Abort()
 
@@ -90,9 +86,9 @@ def reset_configuration(
         cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
     )
     if result.rc == 0:
-        logger.info(f"The AWX cluster configuration was successfully reset")
+        logger.info("The AWX cluster configuration was successfully reset")
     else:
-        logger.error(f"Resetting the AWX cluster configuration failed")
+        logger.error("Resetting the AWX cluster configuration failed")
 
 
 @app.command(
@@ -110,6 +106,6 @@ def backup_configuration() -> None:
         cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
     )
     if result.rc == 0:
-        logger.info(f"The AWX cluster assets were successfully exported")
+        logger.info("The AWX cluster assets were successfully exported")
     else:
-        logger.error(f"Exporting the AWX cluster assets failed")
+        logger.error("Exporting the AWX cluster assets failed")
