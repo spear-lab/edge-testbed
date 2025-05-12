@@ -3,76 +3,80 @@
 # Our goal is to also use the VPN as a secure connection to services hosted on the cloud server (e.g. AWX).
 # For this to work smoothly the easiest solution is to spin up a VPN client on the cloud server.
 
-- name: Install OpenVPN on the cloud server host
+- name: Run in privileged mode
   become: true
-  ansible.builtin.apt:
-    pkg:
-      - openvpn
-    state: latest
-    update_cache: true
+  block:
+    - name: Install OpenVPN on the cloud server host
+      ansible.builtin.apt:
+        pkg:
+          - openvpn
+        state: latest
+        update_cache: true
 
-- name: "Generate credentials for '{{ cloud_server_common_name }}' with static IP '{{ _gv__cloud_server_vpn_client_ip }}'"
-  ansible.builtin.include_role:
-    name: cloud-server/vpn/add-client
-  vars:
-    _rin__client_name: "{{ cloud_server_common_name }}"
-    _rin__static_ip: "{{ _gv__cloud_server_vpn_client_ip }}"
+    - name: "Generate credentials for '{{ cloud_server_common_name }}' with static IP '{{ _gv__cloud_server_vpn_client_ip }}'"
+      ansible.builtin.include_role:
+        name: cloud-server/vpn/add-client
+      vars:
+        _rin__client_name: "{{ cloud_server_common_name }}"
+        _rin__static_ip: "{{ _gv__cloud_server_vpn_client_ip }}"
 
-- name: Aggregate credentials
-  ansible.builtin.include_role:
-    name: cloud-server/vpn/get-client-credentials
-  vars:
-    _rin__client_name: "{{ cloud_server_common_name }}"
-    _rin__copy_to_localhost: "{{ copy_credentials_to_localhost }}"
+    - name: Aggregate credentials
+      ansible.builtin.include_role:
+        name: cloud-server/vpn/get-client-credentials
+      vars:
+        _rin__client_name: "{{ cloud_server_common_name }}"
+        _rin__copy_to_localhost: false
 
-- name: Copy all credentials to the correct OpenVPN folder
-  ansible.builtin.copy:
-    src: "{{ _gv__vpn_data_volume_path }}/clients/{{ cloud_server_common_name }}/"
-    dest: /etc/openvpn/client/
-    remote_src: true
-# ensure that vpn client connection stays alive (after error or reboot)
+    - name: Copy all credentials to the correct OpenVPN folder
+      ansible.builtin.copy:
+        src: "{{ _gv__vpn_data_volume_path }}/clients/{{ cloud_server_common_name }}/"
+        dest: /etc/openvpn/client/
+        remote_src: true
+        mode: preserve
 
-- name: Rename .ovpn to .conf
-  copy:
-    src: "/etc/openvpn/client/{{ cloud_server_common_name }}.ovpn"
-    dest: "/etc/openvpn/client/{{ cloud_server_common_name }}.conf"
-    remote_src: true
+    - name: Rename .ovpn to .conf
+      ansible.builtin.copy:
+        src: "/etc/openvpn/client/{{ cloud_server_common_name }}.ovpn"
+        dest: "/etc/openvpn/client/{{ cloud_server_common_name }}.conf"
+        remote_src: true
+        mode: preserve
 
-- name: Ensure AUTOSTART is set to "all"
-  lineinfile:
-    path: /etc/default/openvpn
-    regexp: "^#?AUTOSTART="
-    line: 'AUTOSTART="all"'
+    - name: Ensure AUTOSTART is set to "all"
+      ansible.builtin.lineinfile:
+        path: /etc/default/openvpn
+        regexp: "^#?AUTOSTART="
+        line: 'AUTOSTART="all"'
 
-- name: Enable OpenVPN client service at boot
-  ansible.builtin.systemd:
-    name: "{{ vpn_client_service }}"
-    enabled: true
+    - name: Enable OpenVPN client service at boot
+      ansible.builtin.systemd:
+        name: "{{ vpn_client_service }}"
+        enabled: true
 
-- name: Start OpenVPN client service
-  ansible.builtin.systemd:
-    name: "{{ vpn_client_service }}"
-    state: started
+    - name: Start OpenVPN client service
+      ansible.builtin.systemd:
+        name: "{{ vpn_client_service }}"
+        state: started
 
-- name: Ensure OpenVPN client systemd override directory exists
-  file:
-    path: "/etc/systemd/system/{{ openvpn_service }}.service.d"
-    state: directory
-    mode: "0755"
+    - name: Ensure OpenVPN client systemd override directory exists
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ vpn_client_service }}.service.d"
+        state: directory
+        mode: "0755"
 
-- name: Add systemd override for automatic restart on failure
-  copy:
-    dest: "/etc/systemd/system/{{ openvpn_service }}.service.d/override.conf"
-    content: |
-      [Service]
-      Restart=on-failure
-      RestartSec=5
+    - name: Add systemd override for automatic restart on failure
+      ansible.builtin.copy:
+        mode: preserve
+        dest: "/etc/systemd/system/{{ vpn_client_service }}.service.d/override.conf"
+        content: |
+          [Service]
+          Restart=on-failure
+          RestartSec=5
 
-- name: Reload systemd daemon to apply changes
-  ansible.builtin.systemd:
-    daemon_reload: true
+    - name: Reload systemd daemon to apply changes
+      ansible.builtin.systemd:
+        daemon_reload: true
 
-- name: Restart OpenVPN client service to apply systemd override
-  ansible.builtin.systemd:
-    name: "{{ openvpn_service }}"
-    state: restarted
+    - name: Restart OpenVPN client service to apply systemd override
+      ansible.builtin.systemd:
+        name: "{{ vpn_client_service }}"
+        state: restarted
