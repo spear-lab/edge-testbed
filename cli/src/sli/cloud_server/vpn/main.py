@@ -27,13 +27,13 @@ def add_vpn_client(
             "client_names": [client_common_name],
             "copy_over_credentials_to_localhost": get_client_credentials,
         },
-        spinner_message=f"Adding new client '{client_common_name}' to the VPN" if verbose else "",
+        spinner_message="" if verbose else f"Adding new client '{client_common_name}' to the VPN",
     )
     if res.rc == 0:
         logger.info(f"The new client '{client_common_name}' was successfully added.")
         if get_client_credentials:
             logger.info(
-                f"\nThe certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
+                f"The certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
             )
 
 
@@ -48,9 +48,9 @@ def get_client_credentials(client_common_name: str, verbose: bool = False) -> No
             "client_name": client_common_name,
             "copy_over_credentials_to_localhost": True,
         },
-        spinner_message="Fetching client certificates from the VPN Server" if verbose else "",
+        spinner_message="" if verbose else "Fetching client certificates from the VPN Server",
     )
     if res.rc == 0:
         logger.info(
-            f"\nThe certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
+            f"The certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
         )

@@ -28,7 +28,7 @@ def run_ansible(
     cmdline = f"--vault-password-file {get_vault_pwd_file_path()}"
     if spinner_message:
         spinner_context = create_spinner_context_manager(message=spinner_message)
-    with spinner_context if spinner_message else nullcontext:
+    with spinner_context if spinner_message else nullcontext():
         return ansible_runner.run(
             playbook=str(get_playbook_path(playbook_suffix)),
             private_data_dir=str(find_repo_root()),

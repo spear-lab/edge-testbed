@@ -25,7 +25,7 @@ app.add_typer(
 def show_url(verbose: bool = False) -> None:
     result = run_ansible(
         playbook_suffix="awx/get_url.yml",
-        spinner_message="Fetching port information from AWX cluster" if verbose else "",
+        spinner_message="" if verbose else "Fetching port information from AWX cluster",
     )
     if result.rc == 0:
         target_host = [k for k in result.stats.get("ok") if k != "localhost"][0]
@@ -40,7 +40,7 @@ def show_url(verbose: bool = False) -> None:
 def show_admin_pwd(verbose: bool = False) -> None:
     result = run_ansible(
         playbook_suffix="awx/get_admin_pwd.yml",
-        spinner_message="Fetching admin pwd from AWX cluster" if verbose else "",
+        spinner_message="" if verbose else "Fetching admin pwd from AWX cluster",
     )
     if result.rc == 0:
         target_host = [k for k in result.stats.get("ok") if k != "localhost"][0]
