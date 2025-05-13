@@ -19,7 +19,7 @@
         _rin__client_name: "{{ item }}"
       loop: "{{ client_names }}"
 
-    - name: Retrieve all new client certificates
+    - name: Retrieve all new client credentials
       ansible.builtin.include_role:
         name: local/cloud-server/vpn/get-client-credentials
       vars:

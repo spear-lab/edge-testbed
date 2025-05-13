@@ -19,5 +19,4 @@ app.add_typer(
 def initial_setup() -> None:
     run_ansible(
         playbook_suffix="local/cloud-server/initial-setup.yml",
-        become_target_host="cloud-server",
     )

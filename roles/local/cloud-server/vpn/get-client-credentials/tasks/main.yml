@@ -7,6 +7,7 @@
     archive_path: "{{ archive_folder_path }}/{{ _rin__client_name }}.tar.gz"
 
 - name: "Create client credentials folder for '{{ _rin__client_name }}'"
+  become: true
   ansible.builtin.expect:
     command: >
       docker run
@@ -21,6 +22,7 @@
   no_log: false
 
 - name: Ensure keepalive is present in client config
+  become: true
   lineinfile:
     path: "{{ _gv__vpn_data_volume_path }}/clients/{{ _rin__client_name }}/{{ _rin__client_name }}.ovpn"
     regexp: '^keepalive '

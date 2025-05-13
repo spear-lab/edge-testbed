@@ -6,6 +6,7 @@
     mode: "0755"
 
 - name: Create a compressed tarball of the new credentials folder
+  become: true
   community.general.archive:
     path: "{{ _gv__vpn_data_volume_path }}/clients/{{ _rin__client_name }}"
     dest: "{{ archive_path }}"
@@ -20,6 +21,7 @@
     mode: "0755"
 
 - name: Fetch the tarball from the vpn server to the local runner host
+  become: true
   ansible.builtin.fetch:
     src: "{{ archive_path }}"
     dest: "{{ archive_path }}"
@@ -42,3 +44,7 @@
   ansible.builtin.file:
     path: "{{ archive_path }}"
     state: absent
+
+- name: Inform the user where to find the requested certificates
+  ansible.builtin.debug:
+    msg: "The requested certificates can be found on your local machine at `{{ archive_folder_path }}/{{ _rin__client_name }}`"

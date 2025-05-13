@@ -9,6 +9,7 @@
     force_vpn_config_update: false
     cloud_server_common_name: cloud_server
     vpn_client_service: "openvpn-client@cloud_server"
+    # ansible_become_pass: spear 
 
   roles:
     - role: local/cloud-server/vpn/setup
