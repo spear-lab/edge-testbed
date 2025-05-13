@@ -4,7 +4,6 @@ import sli.awx_cluster.configuration
 import sli.awx_cluster.projects
 from sli.utils.ansible import run_ansible
 from sli.utils.logging import logger
-from sli.utils.styling import create_spinner_context_manager
 from sli.utils.typer_augmentations import AliasGroup
 
 app = typer.Typer(cls=AliasGroup)
@@ -24,14 +23,10 @@ app.add_typer(
 
 @app.command("url", help="Prints the url to the AWX cluster")
 def show_url() -> None:
-    spinner_context = create_spinner_context_manager(
-        message="Fetching port information from AWX cluster"
+    result = run_ansible(
+        playbook_suffix="awx/get_url.yml",
+        spinner_message="Fetching port information from AWX cluster",
     )
-    with spinner_context:
-        result = run_ansible(
-            playbook_suffix="awx/get_url.yml",
-            quiet=True,
-        )
     if result.rc == 0:
         target_host = [k for k in result.stats.get("ok") if k != "localhost"][0]
         facts = result.get_fact_cache(target_host)
@@ -43,12 +38,11 @@ def show_url() -> None:
 
 @app.command("admin-pwd", help="Prints the admin pwd to log into the AWX cluster")
 def show_admin_pwd() -> None:
-    spinner_context = create_spinner_context_manager(message="Fetching admin pwd from AWX cluster")
-    with spinner_context:
-        result = run_ansible(
-            playbook_suffix="awx/get_admin_pwd.yml",
-            quiet=True,
-        )
+    result = run_ansible(
+        playbook_suffix="awx/get_admin_pwd.yml",
+        quiet=True,
+        spinner_message="Fetching admin pwd from AWX cluster",
+    )
     if result.rc == 0:
         target_host = [k for k in result.stats.get("ok") if k != "localhost"][0]
         facts = result.get_fact_cache(target_host)

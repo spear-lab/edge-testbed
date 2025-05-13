@@ -1,11 +1,13 @@
 ---
 
 - name: "Check if credentials for '{{ _rin__client_name }}' already exist"
+  become: true
   ansible.builtin.stat:
     path: "{{ _gv__vpn_data_volume_path }}/pki/issued/{{ _rin__client_name }}.crt"
   register: client_crt
 
 - name: "Run OpenVPN client build in Docker for '{{ _rin__client_name }}'"
+  become: true
   when: not client_crt.stat.exists
   ansible.builtin.expect:
     command: >

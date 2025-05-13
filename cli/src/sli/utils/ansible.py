@@ -1,11 +1,13 @@
 import pathlib
 import sys
+from contextlib import nullcontext
 
 import ansible_runner
 
 from sli.configuration.security.main import get_vault_pwd_file_path
 from sli.utils.auxiliary import find_repo_root
 from sli.utils.logging import logger
+from sli.utils.styling import create_spinner_context_manager
 
 
 def get_playbook_path(playbook_suffix: str) -> pathlib.Path:
@@ -16,7 +18,7 @@ def run_ansible(
     playbook_suffix: str,
     extravars: dict = {},
     verbosity: int = 1,
-    quiet: bool = False,
+    spinner_message: str = "",
 ) -> ansible_runner.runner.Runner:
     def event_handler(event):
         if event.get("event") == "runner_on_failed":
@@ -24,12 +26,15 @@ def run_ansible(
             sys.exit(1)
 
     cmdline = f"--vault-password-file {get_vault_pwd_file_path()}"
-    return ansible_runner.run(
-        playbook=str(get_playbook_path(playbook_suffix)),
-        private_data_dir=str(find_repo_root()),
-        cmdline=cmdline,
-        verbosity=verbosity,
-        extravars=extravars,
-        quiet=quiet,
-        event_handler=event_handler,
-    )
+    if spinner_message:
+        spinner_context = create_spinner_context_manager(message=spinner_message)
+    with spinner_context if spinner_message else nullcontext:
+        return ansible_runner.run(
+            playbook=str(get_playbook_path(playbook_suffix)),
+            private_data_dir=str(find_repo_root()),
+            cmdline=cmdline,
+            verbosity=verbosity,
+            extravars=extravars,
+            quiet=bool(spinner_message),
+            event_handler=event_handler,
+        )
