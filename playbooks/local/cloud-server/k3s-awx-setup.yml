@@ -1,7 +1,4 @@
 ---
-
-# Intended to be run on an administrator's work machine, not AWX.
-
 - name: K3S AWX Setup
   hosts: cloud-server
   environment:
@@ -30,5 +27,5 @@
   roles:
     - role: third-party/xanmanning.k3s
     - role: third-party/gantsign.helm
-    - role: cloud-server/install-prometheus
-    - role: cloud-server/setup-awx-operator
+    - role: local/cloud-server/install-prometheus
+    - role: local/cloud-server/setup-awx-operator

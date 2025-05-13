@@ -1,6 +1,4 @@
 ---
-# Intended to be run on an administrator's work machine, not AWX.
-
 # IMPORTANT: Ensure that the ansible-galaxy roles are installed on the ansible-host that will run this playbook.
 # To install these requirements run "make install-ansible-requirements" in the root of the test-bed repository.
 

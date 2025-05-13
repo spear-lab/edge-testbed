@@ -1,7 +1,4 @@
 ---
-
-# Intended to be run on an administrator's work machine, not AWX.
-
 # We use a single dockerized OpenVPN server for our VPN.
 # https://github.com/kylemanna/docker-openvpn/tree/master
 
@@ -14,5 +11,5 @@
     vpn_client_service: "openvpn-client@cloud_server"
 
   roles:
-    - role: cloud-server/vpn/setup
+    - role: local/cloud-server/vpn/setup
       _rin__force_vpn_config_update: "{{ force_vpn_config_update | bool }}"
