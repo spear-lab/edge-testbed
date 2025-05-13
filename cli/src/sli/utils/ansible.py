@@ -30,10 +30,8 @@ def run_ansible(
 
     if become_target_host:
         cmdline += " --ask-become-pass"
-        passwords = (
-            {"^BECOME password.*:\\s*?$": ask_for_target_host_become_pwd(become_target_host)},
-        )
-
+        passwords = {"^BECOME password.*:\\s*?$": ask_for_target_host_become_pwd(become_target_host)}
+        
     return ansible_runner.run(
         playbook=str(get_playbook_path(playbook_suffix)),
         private_data_dir=str(find_repo_root()),
