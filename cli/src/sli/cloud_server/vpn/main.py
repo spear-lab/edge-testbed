@@ -41,14 +41,14 @@ def add_vpn_client(
     "get-client-credentials",
     help="Copies the requested client credentials over into /tmp/vpn-client-credentials/<client-name>",
 )
-def get_client_credentials(client_common_name: str) -> None:
+def get_client_credentials(client_common_name: str, verbose: bool = False) -> None:
     res = run_ansible(
         playbook_suffix="local/cloud-server/vpn/get-client-credentials.yml",
         extravars={
             "client_name": client_common_name,
             "copy_over_credentials_to_localhost": True,
         },
-        spinner_message="Fetching client certificates from the VPN Server",
+        spinner_message="Fetching client certificates from the VPN Server" if verbose else "",
     )
     if res.rc == 0:
         logger.info(
