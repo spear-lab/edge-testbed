@@ -4,8 +4,7 @@ import rich
 import rich.traceback
 import typer
 
-import sli.cluster.main
-import sli.configuration.main
+import sli.awx_cluster.main
 from sli.utils.initial import handle_init_use
 from sli.utils.logging import logger
 from sli.utils.typer_augmentations import AliasGroup
@@ -19,12 +18,11 @@ app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, cls=
     "version, v", help="Show the version of the currently installed SPEAR Edge-Testbed CLI"
 )
 def show_version():
-    logger.info(f"SPEAR Edge-Testbed CLI version: '{version('sli')}'")
-
+    logger.info(f"SPEAR Edge-Testbed CLI version: '{version('spear-edge-testbed-cli')}'")
 
 app.add_typer(
-    typer_instance=sli.cluster.main.app,
-    name="cluster, c",
+    typer_instance=sli.awx_cluster.main.app,
+    name="awx-cluster, ac",
     help="Commands to interact with an AWX cluster",
 )
 

@@ -1,0 +1,29 @@
+
+---
+- name: Check if VPN cloud client is reachable
+  hosts: localhost
+  roles:
+    - role: common/connection/pings/cloud-server-vpn-client-check
+
+- name: Get AWX admin pwd
+  hosts: cloud-server
+  environment:
+    # NOTE: K3S has a unique location for its kubectl file.
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Retrieve AWX secret
+      community.kubernetes.k8s_info:
+        kind: Secret
+        name: spear-awx-admin-password 
+        namespace: awx
+      register: secret_result
+
+    - name: Store secret in fact cache for later retrieval via Python
+      ansible.builtin.set_fact:
+        awx_admin_pwd: "{{ secret_result.resources[0].data.password | b64decode }}"
+        cacheable: yes
+
+    - name: Print admin pwd 
+      ansible.builtin.debug:
+        var: awx_admin_pwd
