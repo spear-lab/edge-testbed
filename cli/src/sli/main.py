@@ -7,9 +7,8 @@ import rich.traceback
 import typer
 
 import sli.awx_cluster.main
-import sli.configuration.main
 import sli.cloud_server.main
-
+import sli.configuration.main
 from sli.utils.auxiliary import find_repo_root
 from sli.utils.common import run_in_shell
 from sli.utils.initial import handle_init_use
@@ -37,6 +36,7 @@ app.add_typer(
     name="awx-cluster, ac",
     help="Commands to interact with an AWX cluster",
 )
+
 
 @app.command(
     "version, v", help="Show the version of the currently installed SPEAR Edge-Testbed CLI"

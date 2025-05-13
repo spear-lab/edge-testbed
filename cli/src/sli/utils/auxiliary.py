@@ -19,5 +19,6 @@ def find_repo_root(
         raise FileNotFoundError("The edge-testbed repository root was not found.")
     return find_repo_root(parent)
 
+
 def get_playbook_path(playbook_suffix: str) -> pathlib.Path:
     return find_repo_root() / "playbooks" / playbook_suffix

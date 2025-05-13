@@ -8,6 +8,7 @@ from sli.utils.typer_augmentations import AliasGroup
 
 app = typer.Typer(cls=AliasGroup)
 
+
 @app.command("url", help="Prints the url to the AWX cluster")
 def show_url() -> None:
     spinner_context = create_spinner_context_manager(
