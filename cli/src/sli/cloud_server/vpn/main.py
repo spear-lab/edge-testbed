@@ -34,5 +34,5 @@ def get_client_credentials(client_common_name: str) -> None:
         )
         if res.rc == 0:
             logger.info(
-                f"\nThe certificates can be found at '/tmp/vpn-client-credentials/{ client_common_name }'"
+                f"\nThe certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
             )
