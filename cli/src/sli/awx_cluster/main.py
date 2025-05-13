@@ -44,7 +44,7 @@ def show_url() -> None:
 @app.command("admin-pwd", help="Prints the admin pwd to log into the AWX cluster")
 def show_admin_pwd() -> None:
     spinner_context = create_spinner_context_manager(
-        message="Fetching port information from AWX cluster"
+        message="Fetching admin pwd from AWX cluster"
     )
     with spinner_context:
         result = run_ansible(

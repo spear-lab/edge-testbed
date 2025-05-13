@@ -1,6 +1,7 @@
 ---
 
 - name: Check if OpenVPN config exists
+  become: true
   ansible.builtin.stat:
     path: "{{ _gv__vpn_data_volume_path }}/openvpn.conf"
   register: vpn_config
@@ -10,6 +11,7 @@
   ansible.builtin.include_tasks: generate_vpn_config.yml
 
 - name: Check if OpenVPN PKI CA exists
+  become: true
   ansible.builtin.stat:
     path: "{{ _gv__vpn_data_volume_path }}/pki"
   register: ovpn_pki
@@ -19,6 +21,7 @@
   ansible.builtin.include_tasks: generate_pki.yml
 
 - name: Run OpenVPN Server
+  become: true
   community.docker.docker_container:
     name: openvpn
     image: "{{ _gv__vpn_image }}"
