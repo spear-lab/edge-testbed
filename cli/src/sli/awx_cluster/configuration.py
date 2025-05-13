@@ -1,11 +1,13 @@
 import ansible_runner
 import typer
+
 from sli.configuration.security.main import get_vault_pwd_file_path
 from sli.utils.auxiliary import find_repo_root, get_current_branch_name
 from sli.utils.logging import logger
 from sli.utils.typer_augmentations import AliasGroup
 
 app = typer.Typer(cls=AliasGroup)
+
 
 @app.command("apply-configuration, ac", help="Run the cluster configuration playbook")
 def apply_configuration(
