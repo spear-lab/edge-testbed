@@ -4,7 +4,8 @@ import ansible_runner
 
 from sli.configuration.security.main import get_vault_pwd_file_path
 from sli.utils.auxiliary import find_repo_root
-
+from sli.utils.logging import logger
+import sys
 
 def get_playbook_path(playbook_suffix: str) -> pathlib.Path:
     return find_repo_root() / "playbooks" / playbook_suffix
@@ -16,6 +17,12 @@ def run_ansible(
     verbosity: int = 1,
     quiet: bool = False,
 ) -> ansible_runner.runner.Runner:
+    
+    def event_handler(event):
+        if event.get('event') == 'runner_on_failed':
+            logger.error("\n" + event.get("stdout"))
+            sys.exit(1)
+
     cmdline = f"--vault-password-file {get_vault_pwd_file_path()}"
     return ansible_runner.run(
         playbook=str(get_playbook_path(playbook_suffix)),
@@ -24,4 +31,5 @@ def run_ansible(
         verbosity=verbosity,
         extravars=extravars,
         quiet=quiet,
+        event_handler=event_handler
     )

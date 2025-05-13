@@ -24,7 +24,7 @@ def get_client_credentials(client_common_name: str) -> None:
         message="Fetching client certificates from the VPN Server"
     )
     with spinner_context:
-        run_ansible(
+        res = run_ansible(
             playbook_suffix="local/cloud-server/vpn/get-client-credentials.yml",
             extravars={
                 "client_name": client_common_name,
@@ -32,6 +32,7 @@ def get_client_credentials(client_common_name: str) -> None:
             },
             quiet=True,
         )
-    logger.info(
-        "The certificates can be found at '/tmp/vpn-client-credentials/{ client_common_name }'"
-    )
+        if res.rc == 0:
+            logger.info(
+                f"\nThe certificates can be found at '/tmp/vpn-client-credentials/{ client_common_name }'"
+            )
