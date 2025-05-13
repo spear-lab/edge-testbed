@@ -1,27 +1,12 @@
 import ansible_runner
 import typer
 
-import sli.awx_cluster.configuration
-import sli.awx_cluster.projects
 from sli.utils.auxiliary import find_repo_root, get_playbook_path
 from sli.utils.logging import logger
 from sli.utils.styling import create_spinner_context_manager
 from sli.utils.typer_augmentations import AliasGroup
 
 app = typer.Typer(cls=AliasGroup)
-
-app.add_typer(
-    typer_instance=sli.awx_cluster.projects.app,
-    name="projects, p",
-    help="Manage Projects",
-)
-
-app.add_typer(
-    typer_instance=sli.awx_cluster.configuration.app,
-    name="configuration, c",
-    help="Configure the AWX cluster",
-)
-
 
 @app.command("url", help="Prints the url to the AWX cluster")
 def show_url() -> None:

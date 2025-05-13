@@ -7,6 +7,9 @@ import rich.traceback
 import typer
 
 import sli.awx_cluster.main
+import sli.configuration.main
+import sli.cloud_server.main
+
 from sli.utils.auxiliary import find_repo_root
 from sli.utils.common import run_in_shell
 from sli.utils.initial import handle_init_use
@@ -17,9 +20,23 @@ rich.traceback.install(show_locals=True)
 console = rich.console.Console()
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, cls=AliasGroup)
 
+app.add_typer(
+    typer_instance=sli.configuration.main.app,
+    name="configuration, conf",
+    help="Commands to manage and configure the Cartken ITM CLI",
+)
 
-ANSIBLE_GALAXY_ROLES = " ".join(("geerlingguy.docker", "gantsign.golang"))
+app.add_typer(
+    typer_instance=sli.cloud_server.main.app,
+    name="cloud-server, cs",
+    help="Commands to interact with an cloud server",
+)
 
+app.add_typer(
+    typer_instance=sli.awx_cluster.main.app,
+    name="awx-cluster, ac",
+    help="Commands to interact with an AWX cluster",
+)
 
 @app.command(
     "version, v", help="Show the version of the currently installed SPEAR Edge-Testbed CLI"
@@ -38,13 +55,6 @@ def install_local_ansible_dependencies():
     repo_root_path = find_repo_root()
     os.chdir(repo_root_path)
     run_in_shell(shell_cmd="make install-ansible-requirements")
-
-
-app.add_typer(
-    typer_instance=sli.awx_cluster.main.app,
-    name="awx-cluster, ac",
-    help="Commands to interact with an AWX cluster",
-)
 
 
 def main():
