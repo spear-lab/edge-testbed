@@ -1,10 +1,9 @@
 import typer
 
+from sli.utils.ansible import run_ansible
 from sli.utils.auxiliary import get_current_branch_name
 from sli.utils.logging import logger
 from sli.utils.typer_augmentations import AliasGroup
-
-from sli.utils.ansible import run_ansible
 
 app = typer.Typer(cls=AliasGroup)
 
@@ -38,7 +37,6 @@ def apply_configuration(
             "branch": branch,
             "only_update_playbook_related": only_update_playbook_related,
         },
-
     )
     if result.rc == 0:
         logger.info(f"The AWX instance was successfully configured using the '{branch}' branch.")

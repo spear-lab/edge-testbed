@@ -1,7 +1,7 @@
 import typer
-from sli.utils.typer_augmentations import AliasGroup
 
 from sli.utils.ansible import run_ansible
+from sli.utils.typer_augmentations import AliasGroup
 
 app = typer.Typer(cls=AliasGroup)
 

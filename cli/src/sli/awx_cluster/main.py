@@ -2,10 +2,10 @@ import typer
 
 import sli.awx_cluster.configuration
 import sli.awx_cluster.projects
+from sli.utils.ansible import run_ansible
 from sli.utils.logging import logger
 from sli.utils.styling import create_spinner_context_manager
 from sli.utils.typer_augmentations import AliasGroup
-from sli.utils.ansible import run_ansible
 
 app = typer.Typer(cls=AliasGroup)
 
