@@ -26,6 +26,8 @@
 
   roles:
     - role: third-party/xanmanning.k3s
+      become: true
     - role: third-party/gantsign.helm
+      become: true
     - role: local/cloud-server/install-prometheus
     - role: local/cloud-server/setup-awx-operator

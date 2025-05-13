@@ -1,10 +1,29 @@
 ---
 
+- name: Ensure awx-operator directory is owned by the correct user
+  ansible.builtin.file:
+    path: /home/spear/awx-operator
+    owner: spear
+    group: spear
+    state: directory
+  become: yes
+
+- name: Add awx-operator directory to git safe.directory
+  ansible.builtin.command:
+    cmd: git config --global --add safe.directory /home/spear/awx-operator
+  become: yes
+  # become_user: spear
+  args:
+    creates: /home/spear/.gitconfig
+
 - name: Clone awx-operator repository
   ansible.builtin.git:
     repo: https://github.com/ansible/awx-operator.git
     version: '2.19.1'
-    dest: "awx-operator"
+    dest: /home/spear/awx-operator
+    update: yes
+  become: yes
+  # become_user: spear
 
 - name: Copy files over
   ansible.builtin.copy:
