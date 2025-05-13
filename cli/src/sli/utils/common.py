@@ -3,6 +3,7 @@ import json
 import pathlib
 import shlex
 import subprocess
+import getpass
 
 import rich
 
@@ -50,3 +51,6 @@ def run_in_shell(
         text=text,
         shell=pure_shell,
     )
+
+def ask_for_target_host_become_pwd(target_host: str) -> str:
+    return getpass.getpass(f"[sudo] '{target_host}' password: ")

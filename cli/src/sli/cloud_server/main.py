@@ -1,23 +1,23 @@
-import ansible_runner
 import typer
-import getpass
-from sli.utils.auxiliary import find_repo_root, get_playbook_path
-from sli.utils.logging import logger
-from sli.utils.styling import create_spinner_context_manager
 from sli.utils.typer_augmentations import AliasGroup
+from sli.utils.ansible import run_ansible
 
-from sli.configuration.security.main import get_vault_pwd_file_path
+import sli.cloud_server.vpn.main
 
 app = typer.Typer(cls=AliasGroup)
 
+app.add_typer(
+    typer_instance=sli.cloud_server.vpn.main.app,
+    name="vpn",
+    help="Commands to manage and configure the VPN",
+)
 
-@app.command("initial-setup, is", help="Installs fundamental dependencies, such as apt packages, docker, etc.")
+
+@app.command(
+    "initial-setup", help="Installs fundamental dependencies, such as apt packages, docker, etc."
+)
 def initial_setup() -> None:
-    become_password = getpass.getpass("[sudo] cloud-server password: ")
-    ansible_runner.run(
-        playbook=str(get_playbook_path("local/cloud-server/initial-setup.yml")),
-        private_data_dir=str(find_repo_root()),
-        cmdline=f"--vault-password-file {get_vault_pwd_file_path()} --ask-become-pass",
-        verbosity=1,
-        passwords={"^BECOME password.*:\\s*?$": become_password},
+    run_ansible(
+        playbook_suffix="local/cloud-server/initial-setup.yml",
+        become_target_host="cloud-server",
     )

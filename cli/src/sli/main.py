@@ -21,19 +21,19 @@ app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, cls=
 
 app.add_typer(
     typer_instance=sli.configuration.main.app,
-    name="configuration, conf",
+    name="configuration",
     help="Commands to manage and configure the Cartken ITM CLI",
 )
 
 app.add_typer(
     typer_instance=sli.cloud_server.main.app,
-    name="cloud-server, cs",
+    name="cloud-server",
     help="Commands to interact with an cloud server",
 )
 
 app.add_typer(
     typer_instance=sli.awx_cluster.main.app,
-    name="awx-cluster, ac",
+    name="awx-cluster",
     help="Commands to interact with an AWX cluster",
 )
 
@@ -46,7 +46,7 @@ def show_version():
 
 
 @app.command(
-    "install-local-ansible-dependencies, ilad",
+    "install-local-ansible-dependencies",
     help="Install necessary ansible dependencies on your local host",
 )
 def install_local_ansible_dependencies():

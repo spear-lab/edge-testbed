@@ -1,10 +1,10 @@
-import ansible_runner
 import typer
 
-from sli.configuration.security.main import get_vault_pwd_file_path
-from sli.utils.auxiliary import find_repo_root, get_current_branch_name, get_playbook_path
+from sli.utils.auxiliary import get_current_branch_name
 from sli.utils.logging import logger
 from sli.utils.typer_augmentations import AliasGroup
+
+from sli.utils.ansible import run_ansible
 
 app = typer.Typer(cls=AliasGroup)
 
@@ -32,15 +32,13 @@ def apply_configuration(
         f"The branch '{branch}' will be used when applying the configuration to the AWX instance."
     )
 
-    result = ansible_runner.run(
-        playbook=str(get_playbook_path("cluster/configure_cluster.yml")),
+    result = run_ansible(
+        playbook_suffix="cluster/configure_cluster.yml",
         extravars={
             "branch": branch,
             "only_update_playbook_related": only_update_playbook_related,
         },
-        private_data_dir=str(find_repo_root()),
-        verbosity=1,
-        cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
+
     )
     if result.rc == 0:
         logger.info(f"The AWX instance was successfully configured using the '{branch}' branch.")
@@ -61,12 +59,9 @@ def reset_configuration(
         ):
             raise typer.Abort()
 
-    result = ansible_runner.run(
-        playbook=str(get_playbook_path("cluster/configure_cluster.yml")),
+    result = run_ansible(
+        playbook_suffix="cluster/configure_cluster.yml",
         extravars={"branch": "master", "reset_configuration": True},
-        private_data_dir=str(find_repo_root()),
-        verbosity=1,
-        cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
     )
     if result.rc == 0:
         logger.info("The AWX cluster configuration was successfully reset")
@@ -79,12 +74,8 @@ def reset_configuration(
     help="Exports AWX cluster users as a JSON file (overwrite) in the configure cluster role",
 )
 def backup_configuration() -> None:
-    result = ansible_runner.run(
-        playbook=str(get_playbook_path("cluster/backup_users.yml")),
-        extravars={"branch": "master"},
-        private_data_dir=str(find_repo_root()),
-        verbosity=0,
-        cmdline=f"--vault-password-file {get_vault_pwd_file_path()}",
+    result = run_ansible(
+        playbook_suffix="cluster/backup_users.yml", extravars={"branch": "master"}, verbosity=0
     )
     if result.rc == 0:
         logger.info("The AWX cluster assets were successfully exported")

@@ -1,12 +1,11 @@
-import ansible_runner
 import typer
 
 import sli.awx_cluster.configuration
 import sli.awx_cluster.projects
-from sli.utils.auxiliary import find_repo_root, get_playbook_path
 from sli.utils.logging import logger
 from sli.utils.styling import create_spinner_context_manager
 from sli.utils.typer_augmentations import AliasGroup
+from sli.utils.ansible import run_ansible
 
 app = typer.Typer(cls=AliasGroup)
 
@@ -29,9 +28,8 @@ def show_url() -> None:
         message="Fetching port information from AWX cluster"
     )
     with spinner_context:
-        result = ansible_runner.run(
-            playbook=str(get_playbook_path("awx/get_url.yml")),
-            private_data_dir=str(find_repo_root()),
+        result = run_ansible(
+            playbook_suffix="awx/get_url.yml",
             quiet=True,
         )
     if result.rc == 0:
@@ -49,9 +47,8 @@ def show_admin_pwd() -> None:
         message="Fetching port information from AWX cluster"
     )
     with spinner_context:
-        result = ansible_runner.run(
-            playbook=str(get_playbook_path("awx/get_admin_pwd.yml")),
-            private_data_dir=str(find_repo_root()),
+        result = run_ansible(
+            playbook_suffix="awx/get_admin_pwd.yml",
             quiet=True,
         )
     if result.rc == 0:
