@@ -1,47 +1,24 @@
 ---
-- name: Add Carts Inventory
+- name: Add Testbed-Machines Inventory
   block:
     - awx.awx.inventory:
-        name: Carts
+        name: testbed-machines
         organization: SPEAR
         state: present
 
     - awx.awx.inventory_source:
-        name: it-management
+        name: spear-testbed-repo
         state: present
         source: scm
         source_project: spear-testbed-repo
         source_path: inventories/hosts
-        inventory: Carts
+        inventory: testbed-machines
         # Refresh inventory data from its source each time a job is run.
         update_on_launch: false
         organization: SPEAR
 
     - name: Update the inventory source to ensure latest inventory use.
       awx.awx.inventory_source_update:
-        name: it-management
-        inventory: Carts
-        organization: SPEAR
-
-- name: Add Magna Production Inventory
-  block:
-    - awx.awx.inventory:
-        name: Magna Production
-        organization: SPEAR
-        state: present
-
-    - awx.awx.inventory_source:
-        name: production_inventory
-        state: present
-        source: scm
-        source_project: spear-testbed-repo
-        source_path: inventories/production_inventory
-        inventory: Magna Production
-        update_on_launch: false
-        organization: SPEAR
-
-    - name: Update the inventory source to ensure latest inventory use.
-      awx.awx.inventory_source_update:
-        name: production_inventory
-        inventory: Magna Production
+        name: spear-testbed-repo
+        inventory: testbed-machines
         organization: SPEAR

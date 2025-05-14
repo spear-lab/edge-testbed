@@ -3,7 +3,7 @@
     name: Debug | Gather Reachable Hosts
     job_type: run
     organization: SPEAR
-    inventory: Carts
+    inventory: testbed-machines
     project: spear-testbed-repo
     playbook: playbooks/debug/gather-reachable-hosts/playbook.yml
     execution_environment: "{{ __latest_cartken_ee_name }}"

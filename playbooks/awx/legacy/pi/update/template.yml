@@ -3,7 +3,7 @@
     name: Pi | Update raspberry pi
     job_type: run
     organization: SPEAR
-    inventory: Carts
+    inventory: testbed-machines
     project: spear-testbed-repo
     playbook: playbooks/pi/update/playbook.yml
     execution_environment: "{{ __latest_cartken_ee_name }}"
