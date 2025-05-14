@@ -10,6 +10,6 @@ argument_specs:
         type: bool
         required: false
       _rin__reset_configuration:
-        description: "Resets the cluster configuraation"
+        description: "Resets the cluster configuration"
         type: bool
         required: false

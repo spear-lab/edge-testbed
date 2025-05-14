@@ -9,5 +9,5 @@
           users: true
       SOCIAL_AUTH_GOOGLE_OAUTH2_TEAM_MAP:
         Cartken:
-          organization: Cartken
+          organization: SPEAR
           users: true

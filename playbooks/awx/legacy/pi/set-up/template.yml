@@ -3,7 +3,7 @@
     name: Production | Setup new pi
     description: Set up a new pi from scratch.
     job_type: run
-    organization: Cartken
+    organization: SPEAR
     inventory: Magna Production
     project: spear-testbed-repo
     playbook: playbooks/pi/set-up/playbook.yml

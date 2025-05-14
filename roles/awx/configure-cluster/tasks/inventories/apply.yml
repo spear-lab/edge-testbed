@@ -3,7 +3,7 @@
   block:
     - awx.awx.inventory:
         name: Carts
-        organization: Cartken
+        organization: SPEAR
         state: present
 
     - awx.awx.inventory_source:
@@ -15,19 +15,19 @@
         inventory: Carts
         # Refresh inventory data from its source each time a job is run.
         update_on_launch: false
-        organization: Cartken
+        organization: SPEAR
 
     - name: Update the inventory source to ensure latest inventory use.
       awx.awx.inventory_source_update:
         name: it-management
         inventory: Carts
-        organization: Cartken
+        organization: SPEAR
 
 - name: Add Magna Production Inventory
   block:
     - awx.awx.inventory:
         name: Magna Production
-        organization: Cartken
+        organization: SPEAR
         state: present
 
     - awx.awx.inventory_source:
@@ -38,10 +38,10 @@
         source_path: inventories/production_inventory
         inventory: Magna Production
         update_on_launch: false
-        organization: Cartken
+        organization: SPEAR
 
     - name: Update the inventory source to ensure latest inventory use.
       awx.awx.inventory_source_update:
         name: production_inventory
         inventory: Magna Production
-        organization: Cartken
+        organization: SPEAR

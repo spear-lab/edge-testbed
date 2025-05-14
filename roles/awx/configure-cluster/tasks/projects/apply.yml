@@ -4,7 +4,7 @@
     name: Demo Project
     state: absent
 
-- name: Ensure the it-management repository exists as an AWX project and is synchronized
+- name: Ensure the testbed repository exists as an AWX project and is synchronized
   ansible.builtin.include_role:
     name: awx/sync-awx-project
   vars:

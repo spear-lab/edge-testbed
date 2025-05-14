@@ -3,7 +3,7 @@
   awx.awx.execution_environment:
     name: "{{ __latest_cartken_ee_name }}"
     image: registry.gitlab.com/cartken/it-management/awx-execution-env:latest
-    organization: Cartken
+    organization: SPEAR
     pull: always
     state: present
     credential: "{{ __it_management_read_image_registry_credential_name }}"

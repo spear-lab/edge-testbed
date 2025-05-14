@@ -4,7 +4,7 @@
     name: Default
     state: absent
 
-- name: Ensure the Cartken organization exists
+- name: Ensure the SPEAR organization exists
   awx.awx.organization:
-    name: "Cartken"
+    name: "SPEAR"
     state: present

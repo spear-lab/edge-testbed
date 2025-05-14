@@ -2,7 +2,7 @@
 - awx.awx.job_template:
     name: Pi | Update raspberry pi
     job_type: run
-    organization: Cartken
+    organization: SPEAR
     inventory: Carts
     project: spear-testbed-repo
     playbook: playbooks/pi/update/playbook.yml

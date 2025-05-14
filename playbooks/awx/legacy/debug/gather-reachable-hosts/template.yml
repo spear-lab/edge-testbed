@@ -2,7 +2,7 @@
 - awx.awx.job_template:
     name: Debug | Gather Reachable Hosts
     job_type: run
-    organization: Cartken
+    organization: SPEAR
     inventory: Carts
     project: spear-testbed-repo
     playbook: playbooks/debug/gather-reachable-hosts/playbook.yml

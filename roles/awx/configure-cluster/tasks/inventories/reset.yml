@@ -12,6 +12,6 @@
 
 - awx.awx.inventory:
     name: "{{ item }}"
-    organization: Cartken
+    organization: SPEAR
     state: absent
   loop: "{{ inventories }}"

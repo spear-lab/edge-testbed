@@ -4,35 +4,23 @@ _rin__reset_configuration: false
 
 __state: "{{ 'absent' if _rin__reset_configuration else 'present' }}"
 
-__field_tech_team: "Field-Technicians"
-__magna_prod_team: "Magna-Production"
-__sw_slim_team: "Software-Engineering-SLIM"
-__sw_full_team: "Software-Engineering-FULL"
+__admin_team: "Admins"
+__user_team: "Users"
 
 __all_teams:
-  - "{{ __field_tech_team }}"
-  - "{{ __magna_prod_team }}"
-  - "{{ __sw_slim_team }}"
-  - "{{ __sw_full_team }}"
+  - "{{ __admin_team }}"
+  - "{{ __user_team }}"
 
-# NOTE: These are legacy naming conventions that we should overhaul.
+__testbed_read_repository_credential_name: testbed git
 
-__it_management_read_repository_credential_name: it-management git
+__testbed_read_image_registry_credential_name: Default Execution Environment Registry Credential
 
-__it_management_read_image_registry_credential_name: Default Execution Environment Registry Credential
+__latest_ee_name: latest_EE
 
-__latest_cartken_ee_name: latest_cartken_EE
-
-__gitlab_docker_deploy_access_credential_type_name: Gitlab docker deploy access
+__github_docker_deploy_access_credential_type_name: Github docker deploy access
 __awx_docker_deb_deploy_token_credential_name: awx-docker-deb-deploy-token
 
-__gitlab_robot_configs_write_token_credential_type_name: GitLab Robot Configs write token
-__gitlab_robot_configs_write_token_credential_name: GitLab Robot Configs write token
+__github_api_read_token_credential_type_name: GitHub testbed API read token
+__github_api_read_token_credential_name: GitHub testbed API read token
 
-__gitlab_api_read_token_credential_type_name: GitLab API read token
-__gitlab_api_read_token_credential_name: GitLab Cartken API read token
-
-__backend_access_credential_type_name: Backend access
-__cartken_backend_access_credential_name: Cartken cloud backend access
-
-__container_group_for_cart_updates: Pod for Cart Updates
+__default_container_group: Default Pod

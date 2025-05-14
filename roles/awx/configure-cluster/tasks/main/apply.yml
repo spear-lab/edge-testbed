@@ -10,7 +10,7 @@
 
     - ansible.builtin.include_tasks: tasks/teams/apply.yml
 
-    - ansible.builtin.include_tasks: tasks/users/apply.yml
+    # - ansible.builtin.include_tasks: tasks/users/apply.yml
 
     - ansible.builtin.include_tasks: tasks/projects/apply.yml
 

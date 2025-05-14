@@ -6,6 +6,6 @@
 
 - awx.awx.team:
     name: "{{ item }}"
-    organization: Cartken
+    organization: SPEAR
     state: absent
   loop: "{{ teams }}"
