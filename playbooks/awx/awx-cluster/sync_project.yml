@@ -1,23 +1,9 @@
 ---
-- name: Check that all required variables are set
-  hosts: localhost
-  roles:
-    - role: common/check-required-variables
-      _rin__required_variables:
-        - cluster_name
 
 - hosts: localhost
   gather_facts: false
   vars_files:
-    - "files/{{cluster_name}}_cluster_access_credentials.yml"
-    - "files/it_management_git_credentials.yml"
-    - "files/main_repo_tokens.yml"
-    - "files/robot_configs_write_token.yml"
-    - "files/google_oauth.yml"
-    - "files/robot_password.yml"
-    - "files/user_password.yml"
-    - "files/backend_keys.yml"
-    - "files/initial_jetson_password.yml"
+    - "files/awx_cluster_access_credentials.yml"
   environment: "{{ env_vars }}"
   roles:
     - role: awx/sync-awx-project
