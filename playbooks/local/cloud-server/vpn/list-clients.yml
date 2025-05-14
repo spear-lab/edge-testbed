@@ -1,0 +1,8 @@
+---
+
+- name: List all client information
+  hosts: cloud-server
+  tasks:
+    - name: List client information
+      ansible.builtin.include_role:
+        name: local/cloud-server/vpn/list-clients

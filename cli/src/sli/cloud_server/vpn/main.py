@@ -1,4 +1,5 @@
 import typer
+from icecream import ic
 
 from sli.utils.ansible import run_ansible
 from sli.utils.logging import logger
@@ -54,3 +55,20 @@ def get_client_credentials(client_common_name: str, verbose: bool = False) -> No
         logger.info(
             f"The certificates can be found at '/tmp/vpn-client-credentials/{client_common_name}'"
         )
+
+
+@app.command(
+    "list-clients",
+    help="List all VPN clients",
+)
+def list_client(verbose: bool = False) -> None:
+    res = run_ansible(
+        playbook_suffix="local/cloud-server/vpn/list-clients.yml",
+        spinner_message="" if verbose else "Inspecting all clients from the VPN Server",
+    )
+    if res.rc == 0:
+        target_host = [k for k in res.stats.get("ok") if k != "localhost"][0]
+        facts = res.get_fact_cache(target_host)
+        clients = facts.get("vpn_client_list")
+        ic.configureOutput(prefix="")
+        ic(clients)

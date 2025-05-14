@@ -1,0 +1,24 @@
+---
+
+- name: "Run list-client docker cmd"
+  become: true
+  ansible.builtin.expect:
+    command: >
+      docker run
+      -v {{ _gv__vpn_data_volume_name }}:/etc/openvpn
+      --rm {{ _gv__vpn_image }}
+      ovpn_listclients
+    responses:
+      "Enter pass phrase for /etc/openvpn/pki/private/ca.key": "{{ _gv__vpn_ca_pwd }}"
+    timeout: 60
+  no_log: false
+  register: found_client_list
+
+- name: Store secret in fact cache for later retrieval via Python
+  ansible.builtin.set_fact:
+    vpn_client_list: "{{ found_client_list.stdout_lines }}"
+    cacheable: yes
+
+- name: Print client list
+  ansible.builtin.debug:
+    var: vpn_client_list

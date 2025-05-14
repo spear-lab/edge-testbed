@@ -20,11 +20,13 @@ app.add_typer(
     help="Configure the AWX cluster",
 )
 
+
 @app.command("setup", help="Sets up the AWX cluster.")
 def awx_setup() -> None:
     run_ansible(
         playbook_suffix="local/cloud-server/k3s-awx-setup.yml",
     )
+
 
 @app.command("url", help="Prints the url to the AWX cluster")
 def show_url(verbose: bool = False) -> None:

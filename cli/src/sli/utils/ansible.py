@@ -20,10 +20,12 @@ def run_ansible(
     verbosity: int = 1,
     spinner_message: str = "",
 ) -> ansible_runner.runner.Runner:
-    def event_handler(event):
+    def event_handler(event) -> True:
         if event.get("event") == "runner_on_failed":
             logger.error("\n" + event.get("stdout"))
             sys.exit(1)
+        # NOTE: Otherwise the internal event handling gets broken.
+        return True
 
     cmdline = f"--vault-password-file {get_vault_pwd_file_path()}"
     if spinner_message:
