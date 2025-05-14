@@ -31,7 +31,7 @@ def awx_setup() -> None:
 @app.command("url", help="Prints the url to the AWX cluster")
 def show_url(verbose: bool = False) -> None:
     result = run_ansible(
-        playbook_suffix="awx/get_url.yml",
+        playbook_suffix="awx/awx-cluster/get_url.yml",
         spinner_message="" if verbose else "Fetching port information from AWX cluster",
     )
     if result.rc == 0:
@@ -39,14 +39,12 @@ def show_url(verbose: bool = False) -> None:
         facts = result.get_fact_cache(target_host)
         url = facts.get("awx_cluster_vpn_url")
         logger.info("The AWX Cluster URL (VPN Tunneled): \n" + url)
-    else:
-        logger.error("The ansible playbook failed - Ensure that you are connected to the VPN.")
 
 
 @app.command("admin-pwd", help="Prints the admin pwd to log into the AWX cluster")
 def show_admin_pwd(verbose: bool = False) -> None:
     result = run_ansible(
-        playbook_suffix="awx/get_admin_pwd.yml",
+        playbook_suffix="awx/awx-cluster/get_admin_pwd.yml",
         spinner_message="" if verbose else "Fetching admin pwd from AWX cluster",
     )
     if result.rc == 0:
@@ -55,5 +53,3 @@ def show_admin_pwd(verbose: bool = False) -> None:
         pwd = facts.get("awx_admin_pwd")
         logger.info("The AWX Cluster Admin PWD (VPN Tunneled): \n" + pwd)
         logger.info("The username is 'admin'")
-    else:
-        logger.error("The ansible playbook failed - Ensure that you are connected to the VPN.")
