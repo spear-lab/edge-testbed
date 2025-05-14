@@ -1,0 +1,19 @@
+---
+- name: Initial Setup
+  hosts: master-nuc
+
+  pre_tasks:
+    - name: Update apt cache and upgrade packages
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+
+  roles:
+    - role: common/install-aux-tools
+    - role: third-party/geerlingguy.docker
+      vars:
+        docker_install_compose: false
+        docker_install_compose_plugin: true
+        docker_compose_package: docker-compose-plugin
+        docker_compose_package_state: present

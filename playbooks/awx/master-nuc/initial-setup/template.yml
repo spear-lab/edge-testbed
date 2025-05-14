@@ -1,0 +1,16 @@
+---
+- awx.awx.job_template:
+    name: Master NUC | Initial Setup
+    job_type: run
+    organization: SPEAR
+    inventory: testbed-machines
+    project: spear-testbed-repo
+    playbook: playbooks/awx/master-nuc/initial-setup/playbook.yml
+    execution_environment: "{{ __latest_ee_name }}"
+    forks: 1
+    timeout: 0
+    state: present
+    instance_groups:
+      - "{{ __default_container_group }}"
+    # credentials:
+    #   - Robot password
