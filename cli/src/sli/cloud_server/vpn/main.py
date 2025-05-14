@@ -23,9 +23,9 @@ def add_vpn_client(
     client_common_name: str, get_client_credentials: bool = True, verbose: bool = False
 ) -> None:
     res = run_ansible(
-        playbook_suffix="local/cloud-server/vpn/add-clients.yml",
+        playbook_suffix="local/cloud-server/vpn/add-user.yml",
         extravars={
-            "client_names": [client_common_name],
+            "client_name": client_common_name,
             "copy_over_credentials_to_localhost": get_client_credentials,
         },
         spinner_message="" if verbose else f"Adding new client '{client_common_name}' to the VPN",

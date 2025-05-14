@@ -1,0 +1,26 @@
+---
+- name: Check that all required variables are set
+  hosts: localhost
+  roles:
+    - role: common/check-required-variables
+      _rin__required_variables:
+        - client_name
+        - copy_over_credentials_to_localhost
+
+- name: Add VPN user (dynamic IP)
+  hosts: cloud-server
+  vars:
+    copy_credentials_to_localhost: "{{ copy_over_credentials_to_localhost | bool }}"
+  tasks:
+    - name: Run OpenVPN client build
+      ansible.builtin.include_role:
+        name: local/cloud-server/vpn/add-client
+      vars:
+        _rin__client_name: "{{ client_name }}"
+
+    - name: Retrieve user credentials
+      ansible.builtin.include_role:
+        name: local/cloud-server/vpn/get-client-credentials
+      vars:
+        _rin__client_name: "{{ client_name }}"
+        _rin__copy_to_localhost: "{{ copy_credentials_to_localhost }}"

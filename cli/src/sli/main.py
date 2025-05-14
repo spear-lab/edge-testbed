@@ -9,6 +9,7 @@ import typer
 import sli.awx_cluster.main
 import sli.cloud_server.main
 import sli.configuration.main
+import sli.master_nuc.main
 from sli.utils.auxiliary import find_repo_root
 from sli.utils.common import run_in_shell
 from sli.utils.initial import handle_init_use
@@ -35,6 +36,12 @@ app.add_typer(
     typer_instance=sli.awx_cluster.main.app,
     name="awx-cluster",
     help="Commands to interact with an AWX cluster",
+)
+
+app.add_typer(
+    typer_instance=sli.master_nuc.main.app,
+    name="master-nuc",
+    help="Commands to interact with the master NUC",
 )
 
 
