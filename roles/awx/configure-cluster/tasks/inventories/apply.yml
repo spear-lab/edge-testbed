@@ -10,7 +10,7 @@
         name: it-management
         state: present
         source: scm
-        source_project: it-management
+        source_project: spear-testbed-repo
         source_path: inventories/hosts
         inventory: Carts
         # Refresh inventory data from its source each time a job is run.
@@ -34,7 +34,7 @@
         name: production_inventory
         state: present
         source: scm
-        source_project: it-management
+        source_project: spear-testbed-repo
         source_path: inventories/production_inventory
         inventory: Magna Production
         update_on_launch: false

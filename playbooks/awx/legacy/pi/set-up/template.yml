@@ -5,7 +5,7 @@
     job_type: run
     organization: Cartken
     inventory: Magna Production
-    project: it-management
+    project: spear-testbed-repo
     playbook: playbooks/pi/set-up/playbook.yml
     execution_environment: "{{ __latest_cartken_ee_name }}"
     forks: 0

@@ -4,7 +4,7 @@
     job_type: run
     organization: Cartken
     inventory: Carts
-    project: it-management
+    project: spear-testbed-repo
     playbook: playbooks/debug/gather-reachable-hosts/playbook.yml
     execution_environment: "{{ __latest_cartken_ee_name }}"
     forks: 10

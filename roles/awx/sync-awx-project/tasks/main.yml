@@ -1,11 +1,11 @@
 ---
-- name: Ensure the it-management repository exists as an AWX project and is synchronized
+- name: Ensure the testbed repository exists as an AWX project and is synchronized
   awx.awx.project:
-    name: it-management
-    organization: Cartken
+    name: spear-testbed-repo
+    organization: SPEAR
     state: present
     scm_type: git
-    scm_url: https://gitlab.com/cartken/it-management
+    scm_url: https://github.com/spear-lab/edge-testbed
     scm_branch: "{{ _rin__branch }}"
-    credential: "{{ __it_management_read_repository_credential_name }}"
+    credential: "{{ __testbed_read_repository_credential_name }}"
     update_project: true

@@ -6,7 +6,7 @@
 - name: Export all users
   awx.awx.export:
     # NOTE: In theory it is possible to export all assets from a cluster.
-    # In pracice, (with out populated configuration) this is not working - it gets stuck somewhere deep in ansible.
+    # In practice, (without populated configuration) this is not working - it gets stuck somewhere deep in ansible.
     # all: true
     users: "all"
   register: export_output
